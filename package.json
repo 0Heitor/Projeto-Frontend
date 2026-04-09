@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "echo \"VITE_API_URL=$VITE_API_URL\" > .env.production && vite build",
     "start": "npx serve -s dist -l $PORT",
     "lint": "eslint .",
     "preview": "vite preview"
