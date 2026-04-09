@@ -13,7 +13,7 @@ export default function Menu(props) {
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="me-auto">
                                 <NavDropdown title="Cadastros" id="basic-nav-dropdown">
-                                    <NavDropdown.Item as={Link} to="/Sistema/cacambas">Caçambs</NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/Sistema/cacambas">Caçambas</NavDropdown.Item>
                                     <NavDropdown.Divider />
                                     <NavDropdown.Item as={Link} to="/Sistema/clientes">Clientes</NavDropdown.Item>
                                     <NavDropdown.Divider />
