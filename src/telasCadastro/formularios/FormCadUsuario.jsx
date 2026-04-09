@@ -80,8 +80,6 @@ export default function FormCadUsuario(props) {
 
             // Se o seu buscarUsuarios retorna a lista de usuários encontrados:
             const listaEncontrada = resp.listaUsuarios;
-
-            console.log(listaEncontrada);
             
             // Verifica se existe alguém com esse e-mail que não seja o próprio usuário (em caso de edição)
             const emailJaExiste = listaEncontrada.some(u => 
