@@ -8,6 +8,7 @@ export default defineConfig({
     react(),,
     babel({ presets: [reactCompilerPreset()] })
   ],
+  base: '/',
   preview: {
     allowedHosts: [
       'projeto-frontend-production.up.railway.app'
