@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ESTADO from '../../recursos/estado';
-
-let urlBaseConsulta = import.meta.env.VITE_API_URL+'/api/cacambas/consulta';
-let urlBase = import.meta.env.VITE_API_URL+'/api/cacambas';
+const API_URL = import.meta.env.VITE_API_URL;
+let urlBaseConsulta = API_URL+'/api/cacambas/consulta';
+let urlBase = API_URL+'/api/cacambas';
 
 export const buscarCacambas = createAsyncThunk('cacambas/buscarCacambas', async (cacamba) => {
     try{
