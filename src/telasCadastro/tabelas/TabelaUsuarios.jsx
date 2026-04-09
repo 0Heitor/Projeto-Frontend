@@ -117,7 +117,7 @@ export default function TabelaUsuarios(props){
             });
         } 
         else 
-        if(!sucessoExibido.current && estado === ESTADO.OCIOSO){
+        if(estado === ESTADO.OCIOSO && !sucessoExibido.current){
             toast.dismiss("processando");
             toast.success("Usuários carregados com sucesso!", {
                 autoClose: 3000,
