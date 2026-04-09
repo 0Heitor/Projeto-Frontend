@@ -7,5 +7,10 @@ export default defineConfig({
   plugins: [
     react(),,
     babel({ presets: [reactCompilerPreset()] })
-  ]
+  ],
+  preview: {
+    allowedHosts: [
+      'projeto-frontend-production.up.railway.app'
+    ]
+  }
 })
