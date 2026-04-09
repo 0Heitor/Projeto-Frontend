@@ -5,7 +5,8 @@ import babel from '@rolldown/plugin-babel'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react(),,
     babel({ presets: [reactCompilerPreset()] })
   ],
+  base: 'Projeto-Frontend'
 })
