@@ -96,13 +96,15 @@ export default function TabelaUsuarios(props){
     useEffect(() => {
         if(estado === ESTADO.PENDENTE){
             sucessoExibido.current = false;
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { toastId: "processando", autoClose: false, theme: "colored" }
-            );
+            if(!toast.isActive("processando")){
+                toast.info(
+                    <div className="d-flex align-items-center">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        <span>Sincronizando dados com o servidor...</span>
+                    </div>, 
+                    { toastId: "processando", autoClose: false, theme: "colored" }
+                );
+            }
         } 
         else 
         if(estado === ESTADO.ERRO){
