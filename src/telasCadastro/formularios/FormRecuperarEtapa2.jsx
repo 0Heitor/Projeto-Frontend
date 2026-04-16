@@ -22,15 +22,12 @@ export default function FormRecuperarEtapa2({ setEtapa, dados }) {
         try {
             const resp = await dispatch(atualizarUsuario({ ...dados, senha: novaSenha })).unwrap();
             
-            console.log("Resposta da API:", resp);
-            if (resp && (resp.status === true || resp.id)) { 
+            if (resp && (resp.status === true || resp.status === 'true')) {
                 toast.success("Senha redefinida com sucesso!");
+                setEtapa('login'); // Tente mudar a etapa PRIMEIRO
                 setDados({ email: "", codigo: "" });
-                setTimeout(() => {
-                    setEtapa('login');
-                }, 500);
             } else {
-                toast.error(resp.mensagem || "Erro ao redefinir senha.");
+                toast.error("O servidor retornou um erro inesperado.");
             }
         } catch (error) {
             //console.error("Erro no Dispatch:", error);
