@@ -48,37 +48,119 @@ export const buscarUsuarios = createAsyncThunk('usuarios/buscarUsuarios', async 
 
 export const buscarUsuariosEmail = createAsyncThunk('usuarios/buscarUsuariosEmail', async (usuario) => {
     try{
-        urlBaseConsulta += "?email="+usuario.email+"&senha="+usuario.senha+"&consulta="+usuario.consulta
-        const resposta = await fetch(urlBaseConsulta, { 
-            method: 'GET'/*,
+        // urlBaseConsulta += "?email="+usuario.email+"&senha="+usuario.senha+"&consulta="+usuario.consulta
+        const resposta = await fetch(urlBaseConsulta+"Email", { 
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            },*/
+            },
+            body: JSON.stringify(usuario)
+        }).catch(erro => {
+            return{
+                status: false,
+                mensagem: 'Ocorreu um erro ao buscar o email do usuario:' + erro.message
+            }
         });
-        const dados = await resposta.json(usuario);
-        if (dados.status) {
-            return {
+        if(resposta.ok){
+            const dados = await resposta.json();
+            return{
                 status: dados.status,
                 mensagem: dados.mensagem,
                 listaUsuarios: dados.listaUsuarios,
                 totalRegistros: dados.totalRegistros
             }
         }
-        else {
-            return {
+        else{
+            return{
                 status: false,
-                mensagem: 'Ocorreu um erro ao buscar o usuario.',
+                mensagem: 'Ocorreu um erro ao buscar o email do usuario.',
                 listaUsuarios: [],
                 totalRegistros: 0
             }
-        } 
+        }
     } 
-    catch(error){
+    catch(erro){
         return{
             status: false,
-            mensagem: 'Ocorreu um erro ao recuperar os usuarios da base de dados:' + erro.message,
+            mensagem: 'Ocorreu um erro ao recuperar emails dos usuarios da base de dados:' + erro.message,
             listaUsuarios: [],
             totalRegistros: 0
+        }
+    }
+});
+
+
+export const enviarCodigoRecuperacao = createAsyncThunk('usuarios/enviarCodigoRecuperacao', async (usuario) => {
+    try{
+        const resposta = await fetch(urlBase + '/recuperar-senha', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(usuario)
+        }).catch(erro => {
+            return{
+                status: false,
+                mensagem: 'Ocorreu um erro ao enviar o código de recuperação:' + erro.message
+            }
+        });
+        if(resposta.ok){
+            const dados = await resposta.json();
+            return{
+                status: dados.status,
+                mensagem: dados.mensagem
+            }
+        }
+        else{
+            return{
+                status: false,
+                mensagem: 'Ocorreu um erro ao enviar o código de recuperação.'
+            }
+        }
+    } 
+    catch(erro){
+        return{
+            status: false,
+            mensagem: 'Ocorreu um erro ao enviar o código de recuperação:' + erro.message
+        }
+    }
+});
+
+export const validarCodigoRecuperacao = createAsyncThunk('usuarios/validarCodigoRecuperacao', async (usuario) => {
+    try{
+        const resposta = await fetch(urlBase + '/validar-codigo-recuperacao', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(usuario)
+        }).catch(erro => {
+            return{
+                status: false,
+                mensagem: 'Ocorreu um erro ao validar o código de recuperação:' + erro.message
+            }
+        });
+        const dados = await resposta.json();
+        if(resposta.ok){
+            //const dados = await resposta.json();
+            return{
+                status: dados.status,
+                mensagem: dados.mensagem,
+                tentativas_restantes: dados.tentativas_restantes
+            }
+        }
+        else{
+            return{
+                status: false,
+                mensagem: dados.mensagem,
+                tentativas_restantes: dados.tentativas_restantes
+            }
+        }
+    } 
+    catch(erro){
+        return{
+            status: false,
+            mensagem: 'Ocorreu um erro ao validar o código de recuperação:' + erro.message
         }
     }
 });
@@ -179,6 +261,7 @@ const initialState = {
     mensagem: "",
     usuarios: [],
     totalRegistros: 0,
+    tentativas_restantes: 5,
 };
 
 const usuarioSlice = createSlice({
@@ -222,6 +305,42 @@ const usuarioSlice = createSlice({
                 }
             })
             .addCase(buscarUsuariosEmail.rejected, (state, action) => {
+                state.estado = ESTADO.ERRO;
+                state.mensagem = action.error.message;
+            })
+            .addCase(enviarCodigoRecuperacao.pending, (state, action) => {
+                state.estado = ESTADO.PENDENTE;
+                state.mensagem = "Enviando código de recuperação...";
+            })
+            .addCase(enviarCodigoRecuperacao.fulfilled, (state, action) => {
+                if (action.payload.status) {
+                    state.estado = ESTADO.OCIOSO;
+                    state.mensagem = action.payload.mensagem;
+                } else {
+                    state.estado = ESTADO.ERRO;
+                    state.mensagem = action.payload.mensagem;
+                }
+            })
+            .addCase(enviarCodigoRecuperacao.rejected, (state, action) => {
+                state.estado = ESTADO.ERRO;
+                state.mensagem = action.error.message;
+            })
+            .addCase(validarCodigoRecuperacao.pending, (state, action) => {
+                state.estado = ESTADO.PENDENTE;
+                state.mensagem = "Validando código de recuperação...";
+            })
+            .addCase(validarCodigoRecuperacao.fulfilled, (state, action) => {
+                if (action.payload.status) {
+                    state.estado = ESTADO.OCIOSO;
+                    state.mensagem = action.payload.mensagem;
+                    state.tentativas_restantes = action.payload.tentativas_restantes;
+                } else {
+                    state.estado = ESTADO.ERRO;
+                    state.mensagem = action.payload.mensagem;
+                    state.tentativas_restantes = action.payload.tentativas_restantes;
+                }
+            })
+            .addCase(validarCodigoRecuperacao.rejected, (state, action) => {
                 state.estado = ESTADO.ERRO;
                 state.mensagem = action.error.message;
             })

@@ -76,25 +76,43 @@ export default function TabelaCacambas(props){
             limit: props.itensPorPagina,
             offset: props.itensPorPagina * (props.paginaAtual - 1)
         }));
-    }, [dispatch]);
+    }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
+            // Exibe o toast de processamento
             toast.info(
                 <div className="d-flex align-items-center">
                     <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando caçambas...</span>
-                </div>,
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
                 { toastId: "processando", autoClose: false, theme: "colored" }
             );
-        } else if (estado === ESTADO.ERRO) {
+        } 
+        else if (estado === ESTADO.ERRO) {
+            // Remove o de processamento antes de mostrar o erro
             toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { theme: "dark" });
-        } else if (!sucessoExibido.current && estado === ESTADO.OCIOSO) {
+            toast.error(`Ops! ${mensagem}`, { 
+                toastId: "erro", 
+                theme: "dark",
+                autoClose: 5000,
+                pauseOnHover: true
+            });
+        } 
+        else if (estado === ESTADO.OCIOSO) {
+            // SEMPRE remove o de processamento ao ficar ocioso
             toast.dismiss("processando");
-            toast.success("Caçambas carregadas!", { autoClose: 3000 });
-            sucessoExibido.current = true;
+
+            // Só mostra o sucesso se ele ainda não foi exibido para este ciclo
+            if (!sucessoExibido.current) {
+                toast.success("Caçambas carregadas com sucesso!", {
+                    toastId: "sucesso-carga", // Adicionado ID fixo para evitar duplicatas
+                    autoClose: 3000,
+                    theme: "light"
+                });
+                sucessoExibido.current = true;
+            }
         }
     }, [estado, mensagem]);
 
@@ -154,6 +172,7 @@ export default function TabelaCacambas(props){
                                     <option value="DISPONIVEL">DISPONÍVEL</option>
                                     <option value="ALUGADA">ALUGADA</option>
                                     <option value="MANUTENCAO">MANUTENÇÃO</option>
+                                    <option value="AGUARDANDO_RETIRADA">AGUARDANDO RETIRADA</option>
                                 </Form.Select>
                             </FloatingLabel>
                         </Col>
@@ -201,7 +220,12 @@ export default function TabelaCacambas(props){
                                 </td>
                                 <td className="text-center">
                                     <span className={`badge p-2 ${item.status === 'DISPONIVEL' ? 'bg-success' : item.status === 'ALUGADA' ? 'bg-info' : 'bg-warning text-dark'}`} style={{ minWidth: '110px' }}>
-                                        {item.status}
+                                        {
+                                            item.status === 'DISPONIVEL' ? "DISPONÍVEL" :
+                                            item.status === 'ALUGADA' ? "ALUGADA" :
+                                            item.status === 'MANUTENCAO' ? "MANUTENÇÃO" :
+                                            item.status
+                                        }
                                     </span>
                                 </td>
                                 <td>

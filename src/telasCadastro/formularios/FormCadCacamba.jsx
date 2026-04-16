@@ -9,10 +9,10 @@ export default function FormCadCacamba(props) {
 
     const cacambaVazia = {
         id: '0',
-        numero: '',
-        tamanho: '',
+        numero: "",
+        tamanho: "",
         status: 'DISPONIVEL',
-        modelo: '',
+        modelo: "",
         ultima_revisao: '',
         ativo: true,
         atualizado_em: '',
@@ -76,8 +76,10 @@ export default function FormCadCacamba(props) {
 
             if (form.checkValidity()) {
                 if (!props.modoEdicao) {
+                    console.log(cacamba);
                     dispatch(adicionarCacamba(cacamba));
                 } else {
+                    console.log(cacamba);
                     dispatch(atualizarCacamba(cacamba));
                     props.setModoEdicao(false);
                     props.setCacambaParaEdicao(cacambaVazia);
@@ -165,7 +167,7 @@ export default function FormCadCacamba(props) {
                                 <option value="DISPONIVEL">DISPONÍVEL</option>
                                 <option value="ALUGADA">ALUGADA</option>
                                 <option value="MANUTENCAO">EM MANUTENÇÃO</option>
-                                <option value="INDISPONIVEL">INDISPONÍVEL</option>
+                                <option value="AGUARDANDO_RETIRADA">AGUARDANDO RETIRADA</option>
                             </Form.Select>
                         </FloatingLabel>
                     </Col>

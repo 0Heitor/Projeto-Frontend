@@ -1,30 +1,28 @@
 import { Container } from "react-bootstrap";
 import { useState } from "react";
 import Pagina from "../templates/Pagina";
-import FormCadCacamba from "./formularios/FormCadCacamba";
-import TabelaCacambas from "./tabelas/TabelaCacambas";
+import FormCadTipoCacamba from "./formularios/FormCadTipoCacamba";
+import TabelaTipoCacambas from "./tabelas/TabelaTipoCacambas";
 
-export default function TelaCadastroCacamba(props) {
+export default function TelaCadastroTipoCacamba(props) {
     const [exibirFormulario, setExibirFormulario] = useState(false);
     const [modoEdicao, setModoEdicao] = useState(false);
     const [itensPorPagina, setItensPorPagina] = useState(5);
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const [cacambaParaEdicao, setCacambaParaEdicao] = useState({
+    const [tipoCacambaParaEdicao, setTipoCacambaParaEdicao] = useState({
         id: '0',
-        numero: '',
-        tamanho: '',
-        status: 'DISPONIVEL',
-        modelo: '',
-        ultima_revisao: '',
+        nome: '',
+        volume: '',
+        preco: 0.00,
+        descricao: '',
         ativo: true,
         atualizado_em:'',
         criado_em:''
     });
     const [filtros, setFiltros] = useState({
-        numero: "",
-        modelo: "",
-        tamanho: "",
-        status: "",
+        nome: "",
+        volume: "",
+        descricao: "",
         ativo: "true"
     }); 
     
@@ -33,16 +31,16 @@ export default function TelaCadastroCacamba(props) {
             <Container>
                 <Pagina>
                     {
-                        exibirFormulario ? <FormCadCacamba exibirFormulario={setExibirFormulario}
-                            cacambaParaEdicao={cacambaParaEdicao}
-                            setCacambaParaEdicao={setCacambaParaEdicao}
+                        exibirFormulario ? <FormCadTipoCacamba exibirFormulario={setExibirFormulario}
+                            tipoCacambaParaEdicao={tipoCacambaParaEdicao}
+                            setTipoCacambaParaEdicao={setTipoCacambaParaEdicao}
                             modoEdicao={modoEdicao}
                             setModoEdicao={setModoEdicao}
                         /> 
                             :
-                            <TabelaCacambas exibirFormulario={setExibirFormulario}
-                                cacambaParaEdicao={cacambaParaEdicao}
-                                setCacambaParaEdicao={setCacambaParaEdicao}
+                            <TabelaTipoCacambas exibirFormulario={setExibirFormulario}
+                                tipoCacambaParaEdicao={tipoCacambaParaEdicao}
+                                setTipoCacambaParaEdicao={setTipoCacambaParaEdicao}
                                 modoEdicao={modoEdicao}
                                 setModoEdicao={setModoEdicao}
                                 itensPorPagina={itensPorPagina}

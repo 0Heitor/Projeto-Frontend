@@ -4,11 +4,13 @@ import {configureStore} from '@reduxjs/toolkit';
 //import fornecedorSlice from './fornecedorReducer.js';
 import usuarioSlice from './redutores/usuarioReducer.js';
 import cacambaSlice from './redutores/cacambaReducer.js';
+import tipocacambaSlice from './redutores/tipocacambaReducer.js';
 
 const store = configureStore({
     reducer:{
         usuario: usuarioSlice,
-        cacamba: cacambaSlice/*,
+        cacamba: cacambaSlice,
+        tipocacamba: tipocacambaSlice/*,
         cliente: clienteSlice,
         produto: produtoSlice,
         fornecedor: fornecedorSlice,*/

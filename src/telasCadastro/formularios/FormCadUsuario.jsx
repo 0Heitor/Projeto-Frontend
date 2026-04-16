@@ -12,7 +12,7 @@ export default function FormCadUsuario(props) {
         nome: "",
         email: "",
         senha: "",
-        nivel: 'BAIXO',
+        nivel: 'BASICO',
         ativo: true,
         ultimo_login: '',
         criado: ''
@@ -231,8 +231,7 @@ export default function FormCadUsuario(props) {
                                 isValid={usuario.nivel !== ""}
                             >
                                 <option value="ADMIN">ADMIN (Acesso Total)</option>
-                                <option value="OPERADOR">OPERADOR (Gestão)</option>
-                                <option value="BAIXO">BAIXO (Consulta)</option>
+                                <option value="BASICO">BÁSICO (Consulta)</option>
                             </Form.Select>
                         </FloatingLabel>
                     </Col>

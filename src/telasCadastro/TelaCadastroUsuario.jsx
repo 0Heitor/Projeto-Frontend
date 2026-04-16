@@ -14,7 +14,7 @@ export default function TelaCadastroUsuario(props) {
         nome: '',
         email: '',
         senha: '',
-        nivel: 'BAIXO',
+        nivel: 'BASICO',
         ativo: true,
         ultimo_login:'',
         criado:''
