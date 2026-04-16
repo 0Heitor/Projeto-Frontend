@@ -14,7 +14,7 @@ export default function TabelaUsuarios(props){
     //const [paginaAtual, setPaginaAtual] = useState(props.paginaAtual);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
-    const sucessoExibido = useRef(false);
+    const sucessoExibido = useRef(true);
     const dispatch = useDispatch();
     
     /*const [filtros, setFiltros] = useState({
