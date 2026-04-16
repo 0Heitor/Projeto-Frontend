@@ -27,7 +27,8 @@ export default function TelaLogin() {
                 {etapa === 'resetar' && (
                     <FormRecuperarEtapa2 
                         setEtapa={setEtapa} 
-                        dados={dadosRecuperacao} 
+                        dados={dadosRecuperacao}
+                        setDados={setDadosRecuperacao}
                     />
                 )}
             </div>

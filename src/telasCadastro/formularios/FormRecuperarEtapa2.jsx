@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
-export default function FormRecuperarEtapa2({ setEtapa, dados }) {
+export default function FormRecuperarEtapa2({ setEtapa, dados, setDados }) {
     const [novaSenha, setNovaSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
