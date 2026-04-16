@@ -31,7 +31,7 @@ export default function FormRecuperarEtapa2({ setEtapa, dados }) {
                 toast.error("O servidor retornou um erro inesperado.");
             }
         } catch (error) {
-            //console.error("Erro no Dispatch:", error);
+            console.log("Linha do erro:", error.stack);
             toast.error("Erro técnico ao redefinir senha.");
         }
     }
