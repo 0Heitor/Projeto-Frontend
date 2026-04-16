@@ -24,8 +24,9 @@ export default function FormRecuperarEtapa2({ setEtapa, dados }) {
             
             if (resp && (resp.status === true || resp.status === 'true')) {
                 toast.success("Senha redefinida com sucesso!");
-                setEtapa('login'); // Tente mudar a etapa PRIMEIRO
+                setEtapa('login');
                 setDados({ email: "", codigo: "" });
+                return;
             } else {
                 toast.error("O servidor retornou um erro inesperado.");
             }
