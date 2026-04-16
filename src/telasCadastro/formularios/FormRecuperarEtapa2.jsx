@@ -14,22 +14,27 @@ export default function FormRecuperarEtapa2({ setEtapa, dados }) {
 
     async function finalizarTroca(e) {
         e.preventDefault();
+    
         if (novaSenha !== confirmarSenha) {
             return toast.error("As senhas não coincidem!");
         }
+
         try {
             const resp = await dispatch(atualizarUsuario({ ...dados, senha: novaSenha })).unwrap();
-            if(resp.status){
+            
+            //console.log("Resposta da API:", resp);
+            if (resp && (resp.status === true || resp.id)) { 
                 toast.success("Senha redefinida com sucesso!");
                 setDados({ email: "", codigo: "" });
-                setEtapa('login');
+                setTimeout(() => {
+                    setEtapa('login');
+                }, 500);
+            } else {
+                toast.error(resp.mensagem || "Erro ao redefinir senha.");
             }
-            else{
-                toast.error("Erro ao redefinir senha.");
-            }
-        } 
-        catch (error) {
-            toast.error("Erro ao redefinir senha.");
+        } catch (error) {
+            //console.error("Erro no Dispatch:", error);
+            toast.error("Erro técnico ao redefinir senha.");
         }
     }
 
