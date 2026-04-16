@@ -11,7 +11,7 @@ export default function TabelaTiposCacambas(props) {
     const [tipoParaExcluir, setTipoParaExcluir] = useState(null);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
-    const sucessoExibido = useRef(false);
+    const sucessoExibido = useRef(true);
     const dispatch = useDispatch();
 
     const manipulaMudanca = (evento) => {
