@@ -22,7 +22,7 @@ export default function FormRecuperarEtapa2({ setEtapa, dados }) {
         try {
             const resp = await dispatch(atualizarUsuario({ ...dados, senha: novaSenha })).unwrap();
             
-            //console.log("Resposta da API:", resp);
+            console.log("Resposta da API:", resp);
             if (resp && (resp.status === true || resp.id)) { 
                 toast.success("Senha redefinida com sucesso!");
                 setDados({ email: "", codigo: "" });
