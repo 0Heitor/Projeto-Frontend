@@ -3,23 +3,35 @@ import { toast } from 'react-toastify';
 import { Container, Form, Row, Col, Button, FloatingLabel, Spinner } from 'react-bootstrap';
 import { adicionarCacamba, atualizarCacamba, buscarCacambas } from '../../redux/redutores/cacambaReducer';
 import { useSelector, useDispatch } from 'react-redux';
+import ModalSelecaoTipo from "../modais/ModalSelecaoTipo";
 import ESTADO from '../../recursos/estado';
 
 export default function FormCadCacamba(props) {
 
     const cacambaVazia = {
         id: '0',
-        numero: "",
-        tamanho: "",
+        tipoCacamba: {
+            id: '0',
+            nome: '',
+            volume: '',
+            preco: 0.00,
+            descricao: '',
+            ativo: true,
+            atualizado_em:'',
+            criado_em:''
+        },
+        numero: '',
         status: 'DISPONIVEL',
-        modelo: "",
+        modelo: '',
+        endereco_atual:'',
         ultima_revisao: '',
         ativo: true,
-        atualizado_em: '',
-        criado_em: ''
+        atualizada_em:'',
+        criado_em:''
     }
 
     const [cacamba, setCacamba] = useState(props.cacambaParaEdicao || cacambaVazia);
+    const [showModal, setShowModal] = useState(false);
     const [formValidado, setFormValidado] = useState(false);
     const [numeroJaExiste, setNumeroJaExiste] = useState(false);
 
@@ -76,10 +88,8 @@ export default function FormCadCacamba(props) {
 
             if (form.checkValidity()) {
                 if (!props.modoEdicao) {
-                    console.log(cacamba);
                     dispatch(adicionarCacamba(cacamba));
                 } else {
-                    console.log(cacamba);
                     dispatch(atualizarCacamba(cacamba));
                     props.setModoEdicao(false);
                     props.setCacambaParaEdicao(cacambaVazia);
@@ -112,7 +122,7 @@ export default function FormCadCacamba(props) {
 
             <Form noValidate validated={formValidado} onSubmit={manipularSubmissao}>
                 <Row className="mb-3">
-                    <Col md={6}>
+                    <Col md={4}>
                         <FloatingLabel label="Número da Caçamba (Identificador):">
                             <Form.Control
                                 type="text"
@@ -128,19 +138,15 @@ export default function FormCadCacamba(props) {
                             </Form.Control.Feedback>
                         </FloatingLabel>
                     </Col>
-                    <Col md={6}>
-                        <FloatingLabel label="Tamanho (m³):">
-                            <Form.Control
-                                type="number"
-                                step="0.5"
-                                placeholder="Ex: 5.0"
-                                name="tamanho"
-                                value={cacamba.tamanho}
-                                onChange={manipularMudancas}
-                                required
-                                isInvalid={formValidado && cacamba.tamanho === ""}
+                    <Col md={8}>
+                        <FloatingLabel label="Tipo da Caçamba (Clique para Selecionar)">
+                            <Form.Control 
+                                readOnly 
+                                placeholder="Selecione um tipo..." 
+                                value={cacamba.tipoCacamba.nome ? `${cacamba.tipoCacamba.nome} (${cacamba.tipoCacamba.volume} m³)` : ""}
+                                onClick={() => setShowModal(true)}
+                                style={{ cursor: 'pointer', backgroundColor: '#f8f9fa' }}
                             />
-                            <Form.Control.Feedback type="invalid">Informe o tamanho!</Form.Control.Feedback>
                         </FloatingLabel>
                     </Col>
                 </Row>
@@ -174,32 +180,44 @@ export default function FormCadCacamba(props) {
                 </Row>
 
                 <Row className="mb-4">
-                    {/* CAMPO DATA: Aparece somente no modo de Edição/Alteração */}
-                    {props.modoEdicao && (
-                        <Col md={6}>
-                            <FloatingLabel label="Data da Última Revisão:">
-                                <Form.Control
-                                    type="date"
-                                    name="ultima_revisao"
-                                    value={cacamba.ultima_revisao ? cacamba.ultima_revisao.split('T')[0] : ''}
-                                    onChange={manipularMudancas}
-                                />
-                            </FloatingLabel>
-                        </Col>
-                    )}
-
-                    <Col md={props.modoEdicao ? 6 : 12}>
-                        <FloatingLabel label="Registro Ativo:">
-                            <Form.Select 
-                                name="ativo" 
-                                value={cacamba.ativo} 
+                    <Col md={props.modoEdicao ? 4 : 12}>
+                        <FloatingLabel label="Endereço Atual da Caçamba:">
+                            <Form.Control
+                                type="text"
+                                placeholder="Ex: Rua das Flores, 123"
+                                name="endereco_atual"
+                                value={cacamba.endereco_atual}
                                 onChange={manipularMudancas}
-                            >
-                                <option value="true">SIM (Ativo)</option>
-                                <option value="false">NÃO (Inativo)</option>
-                            </Form.Select>
+                            />
                         </FloatingLabel>
                     </Col>
+
+                    {props.modoEdicao && (
+                        <>
+                            <Col md={4}>
+                                <FloatingLabel label="Data da Última Revisão:">
+                                    <Form.Control
+                                        type="date"
+                                        name="ultima_revisao"
+                                        value={cacamba.ultima_revisao ? cacamba.ultima_revisao.split('T')[0] : ''}
+                                        onChange={manipularMudancas}
+                                    />
+                                </FloatingLabel>
+                            </Col>
+                            <Col md={4}>
+                                <FloatingLabel label="Registro Ativo:">
+                                    <Form.Select 
+                                        name="ativo" 
+                                        value={cacamba.ativo} 
+                                        onChange={manipularMudancas}
+                                    >
+                                        <option value="true">SIM (Ativo)</option>
+                                        <option value="false">NÃO (Inativo)</option>
+                                    </Form.Select>
+                                </FloatingLabel>
+                            </Col>
+                        </>
+                    )}
                 </Row>
 
                 <Row className="mt-4">
@@ -243,6 +261,14 @@ export default function FormCadCacamba(props) {
                     </Col>
                 </Row>
             </Form>
+
+            <ModalSelecaoTipo 
+                show={showModal} 
+                onHide={() => setShowModal(false)} 
+                onSelecionar={(tipoSelecionado) => {
+                    setCacamba({ ...cacamba, tipoCacamba: tipoSelecionado });
+                }}
+            />
         </Container>
     );
 }

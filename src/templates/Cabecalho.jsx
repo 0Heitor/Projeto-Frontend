@@ -10,17 +10,22 @@ export default function Cabecalho() {
         <header className="bg-white shadow-sm border-bottom mb-3">
             {/* py-3 aumenta o espaçamento em cima e embaixo */}
             <Container fluid className="py-3 px-4 d-flex justify-content-between align-items-center">
-                <div>
-                    {/* fs-2 deixa o título bem grande e imponente */}
-                    <h2 className="text-primary mb-0 fw-bold" style={{ letterSpacing: '-1px' }}>
-                        <i className="bi bi-building-gear me-3"></i>
-                        Sistema de Gestão Comercial
-                    </h2>
+                {/* Lado Esquerdo: Identidade do Sistema */}
+                <div className="d-flex align-items-center">
+                    <i className="bi bi-building-gear text-primary fs-1 me-3"></i>
+                    <div className="d-flex flex-column">
+                        <h2 className="text-primary mb-0 fw-bold fs-3" style={{ letterSpacing: '-1px', lineHeight: '1.1' }}>
+                            Madrugada Caçambas LTDA
+                        </h2>
+                        <span className="text-muted fs-6">
+                            Sistema de Gestão Comercial
+                        </span>
+                    </div>
                 </div>
 
+                {/* Lado Direito: Usuário e Sair */}
                 <div className="d-flex align-items-center gap-4">
                     <div className="text-end d-none d-md-block">
-                        {/* fs-5 para o nome do usuário ficar bem legível */}
                         <div className="fw-bold text-dark fs-5" style={{ lineHeight: '1.1' }}>
                             {user?.nome || "Usuário"}
                         </div>
@@ -31,7 +36,6 @@ export default function Cabecalho() {
                     
                     <div className="vr mx-2 d-none d-md-block" style={{ height: '40px' }}></div>
                     
-                    {/* Botão maior com padding extra px-4 e py-2 */}
                     <Button 
                         variant="outline-danger" 
                         onClick={logout}

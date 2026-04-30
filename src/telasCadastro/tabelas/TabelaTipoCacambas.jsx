@@ -11,7 +11,7 @@ export default function TabelaTiposCacambas(props) {
     const [tipoParaExcluir, setTipoParaExcluir] = useState(null);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
-    const sucessoExibido = useRef(true);
+    const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
     const manipulaMudanca = (evento) => {
@@ -134,16 +134,18 @@ export default function TabelaTiposCacambas(props) {
                     <h2 className="text-primary mb-0">Tipos de Caçamba</h2>
                     <small className="text-muted">Gerencie modelos, volumes e preços das caçambas</small>
                 </div>
-                <Button 
-                    variant="success" 
-                    className="d-flex align-items-center gap-2 shadow-sm"
-                    onClick={() => {
-                        props.setModoEdicao(false);
-                        props.exibirFormulario(true);
-                    }}
-                >
-                    <i className="bi bi-plus-circle-fill"></i> Novo Tipo
-                </Button>
+                {!props.modoSelecao && (
+                    <Button 
+                        variant="success" 
+                        className="d-flex align-items-center gap-2 shadow-sm"
+                        onClick={() => {
+                            props.setModoEdicao(false);
+                            props.exibirFormulario(true);
+                        }}
+                    >
+                        <i className="bi bi-plus-circle-fill"></i> Novo Tipo
+                    </Button>
+                )}
             </div>
 
             {/* FILTROS */}
@@ -214,15 +216,24 @@ export default function TabelaTiposCacambas(props) {
                                     </span>
                                 </td>
                                 <td className="text-center">
-                                    <div className="d-flex justify-content-center gap-2">
-                                        {/* Aumentado o tamanho dos botões retirando o size="sm" */}
-                                        <Button variant="outline-warning" onClick={() => editarTipo(item)}>
-                                            <i className="bi bi-pencil"></i>
+                                    {props.modoSelecao ? (
+                                        <Button 
+                                            variant="success" 
+                                            className="shadow-sm" 
+                                            onClick={() => props.onSelecionar(item)}
+                                        >
+                                            <i className="bi bi-check2-square me-1"></i> Selecionar
                                         </Button>
-                                        <Button variant="outline-danger" onClick={() => excluirTipo(item)}>
-                                            <i className="bi bi-trash"></i>
-                                        </Button>
-                                    </div>
+                                    ) : (
+                                        <div className="d-flex justify-content-center gap-2">
+                                            <Button variant="outline-warning" onClick={() => editarTipo(item)}>
+                                                <i className="bi bi-pencil"></i>
+                                            </Button>
+                                            <Button variant="outline-danger" onClick={() => excluirTipo(item)}>
+                                                <i className="bi bi-trash"></i>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}

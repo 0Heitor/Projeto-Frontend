@@ -11,7 +11,7 @@ export default function TabelaCacambas(props){
     const [cacambaParaExcluir, setCacambaParaExcluir] = useState(null);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
-    const sucessoExibido = useRef(true);
+    const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
     const manipulaMudanca = (evento) => {
@@ -216,7 +216,7 @@ export default function TabelaCacambas(props){
                                 </td>
                                 <td>
                                     <div className="fw-bold" style={{ fontSize: '1.1rem' }}>{item.modelo}</div>
-                                    <span className="badge bg-secondary" style={{ fontSize: '0.85rem' }}>{item.tamanho} m³</span>
+                                    <span className="badge bg-secondary" style={{ fontSize: '0.85rem' }}>{item.tipoCacamba !== undefined ? item.tipoCacamba.volume : 'N/A'} m³</span>
                                 </td>
                                 <td className="text-center">
                                     <span className={`badge p-2 ${item.status === 'DISPONIVEL' ? 'bg-success' : item.status === 'ALUGADA' ? 'bg-info' : 'bg-warning text-dark'}`} style={{ minWidth: '110px' }}>

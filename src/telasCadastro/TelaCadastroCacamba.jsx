@@ -3,18 +3,30 @@ import { useState } from "react";
 import Pagina from "../templates/Pagina";
 import FormCadCacamba from "./formularios/FormCadCacamba";
 import TabelaCacambas from "./tabelas/TabelaCacambas";
+import ModalSelecaoTipo from "./modais/ModalSelecaoTipo";
 
 export default function TelaCadastroCacamba(props) {
     const [exibirFormulario, setExibirFormulario] = useState(false);
     const [modoEdicao, setModoEdicao] = useState(false);
+    const [showModalTipo, setShowModalTipo] = useState(false);
     const [itensPorPagina, setItensPorPagina] = useState(5);
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [cacambaParaEdicao, setCacambaParaEdicao] = useState({
         id: '0',
+        tipoCacamba: {
+            id: '0',
+            nome: '',
+            volume: '',
+            preco: 0.00,
+            descricao: '',
+            ativo: true,
+            atualizado_em:'',
+            criado_em:''
+        },
         numero: '',
-        tamanho: '',
         status: 'DISPONIVEL',
         modelo: '',
+        endereco_atual:'',
         ultima_revisao: '',
         ativo: true,
         atualizado_em:'',
@@ -38,6 +50,7 @@ export default function TelaCadastroCacamba(props) {
                             setCacambaParaEdicao={setCacambaParaEdicao}
                             modoEdicao={modoEdicao}
                             setModoEdicao={setModoEdicao}
+                            abrirModalTipo={() => setShowModalTipo(true)}
                         /> 
                             :
                             <TabelaCacambas exibirFormulario={setExibirFormulario}
@@ -55,6 +68,17 @@ export default function TelaCadastroCacamba(props) {
                     }
                 </Pagina>
             </Container>
+
+            <ModalSelecaoTipo 
+                show={showModalTipo} 
+                onHide={() => setShowModalTipo(false)}
+                onSelecionar={(tipoSelecionado) => {
+                    setCacambaParaEdicao({
+                        ...cacambaParaEdicao,
+                        tipo: tipoSelecionado
+                    });
+                }}
+            />
         </div>
     )
 }
