@@ -1,14 +1,14 @@
 import { Button, Container, Spinner, Table, Modal, Col, FloatingLabel, Form, Card, Row, Pagination } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
-import { buscarTiposCacambas, removerTipoCacamba } from "../../redux/redutores/tipocacambaReducer";
+import { buscarCategoriasGrupo, removerCategoriasGrupo } from "../../redux/redutores/categoriagrupoReducer";
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 
-export default function TabelaTiposCacambas(props) {
-    const { estado, mensagem, tipocacambas, totalRegistros } = useSelector(state => state.tipocacamba);
+export default function TabelaCategoriaGrupo(props) {
+    const { estado, mensagem, categoriasgrupo, totalRegistros } = useSelector(state => state.categoriagrupo);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-    const [tipoParaExcluir, setTipoParaExcluir] = useState(null);
+    const [categoriaParaExcluir, setCategoriaParaExcluir] = useState(null);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
@@ -18,22 +18,22 @@ export default function TabelaTiposCacambas(props) {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
     }
 
-    function excluirTipo(tipo) {
-        setTipoParaExcluir(tipo);
+    function excluirCategoria(categoria) {
+        setCategoriaParaExcluir(categoria);
         setMostrarConfirmacao(true);
     }
 
     function confirmarExclusao() {
-        if (tipoParaExcluir) {
-            dispatch(removerTipoCacamba(tipoParaExcluir));
+        if (categoriaParaExcluir) {
+            dispatch(removerCategoriasGrupo(categoriaParaExcluir));
             setMostrarConfirmacao(false);
-            setTipoParaExcluir(null);
+            setCategoriaParaExcluir(null);
             buscarComFiltro();
         }
     }
 
-    function editarTipo(tipo) {
-        props.setTipoCacambaParaEdicao(tipo);
+    function editarCategoria(categoria) {
+        props.setCategoriaGrupoParaEdicao(categoria);
         props.setModoEdicao(true);
         props.exibirFormulario(true);
     }
@@ -45,7 +45,7 @@ export default function TabelaTiposCacambas(props) {
             limit: props.itensPorPagina,
             offset: 0
         };
-        dispatch(buscarTiposCacambas(novosFiltros));
+        dispatch(buscarCategoriasGrupo(novosFiltros));
     }
 
     function mudarPagina(numero) {
@@ -56,37 +56,37 @@ export default function TabelaTiposCacambas(props) {
             limit: props.itensPorPagina,
             offset: novoOffset
         };
-        dispatch(buscarTiposCacambas(novosFiltros));
+        dispatch(buscarCategoriasGrupo(novosFiltros));
     }
 
     function mudarQtdItens(novaQuantidade) {
-            const qtd = Number(novaQuantidade);
-            props.setItensPorPagina(qtd);
-            props.setPaginaAtual(1);
-            const novosFiltros = {
-                ...props.filtros,
-                limit: qtd,
-                offset: 0
-            };
-            dispatch(buscarCacambas(novosFiltros));
-        }
+        const qtd = Number(novaQuantidade);
+        props.setItensPorPagina(qtd);
+        props.setPaginaAtual(1);
+        const novosFiltros = {
+            ...props.filtros,
+            limit: qtd,
+            offset: 0
+        };
+        dispatch(buscarCategoriasGrupo(novosFiltros));
+    }
 
     useEffect(() => {
-        dispatch(buscarTiposCacambas({
+        dispatch(buscarCategoriasGrupo({
             ...props.filtros,
             limit: props.itensPorPagina,
             offset: props.itensPorPagina * (props.paginaAtual - 1)
         }));
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
-    // Lógica de Toasts (Mantida a original)
+    // Lógica de Toasts
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
             toast.info(
                 <div className="d-flex align-items-center">
                     <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
+                    <span>Sincronizando categorias com o servidor...</span>
                 </div>, 
                 { toastId: "processando", autoClose: false, theme: "colored" }
             );
@@ -96,17 +96,15 @@ export default function TabelaTiposCacambas(props) {
             toast.error(`Ops! ${mensagem}`, { 
                 toastId: "erro", 
                 theme: "dark",
-                autoClose: 5000,
-                pauseOnHover: true
+                autoClose: 5000
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
             toast.dismiss("processando");
             if (!sucessoExibido.current) {
-                toast.success("Tipos de Caçambas carregadas com sucesso!", {
+                toast.success("Categorias carregadas com sucesso!", {
                     toastId: "sucesso-carga",
                     autoClose: 3000,
-                    theme: "light"
                 });
                 sucessoExibido.current = true;
             }
@@ -132,8 +130,8 @@ export default function TabelaTiposCacambas(props) {
             {/* CABEÇALHO */}
             <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                 <div>
-                    <h2 className="text-primary mb-0">Tipos de Caçamba</h2>
-                    <small className="text-muted">Gerencie modelos, volumes e preços das caçambas</small>
+                    <h2 className="text-primary mb-0">Categorias de Grupos</h2>
+                    <small className="text-muted">Gerencie margens de lucro e comissões por categoria</small>
                 </div>
                 {!props.modoSelecao && (
                     <Button 
@@ -144,7 +142,7 @@ export default function TabelaTiposCacambas(props) {
                             props.exibirFormulario(true);
                         }}
                     >
-                        <i className="bi bi-plus-circle-fill"></i> Novo Tipo
+                        <i className="bi bi-plus-circle-fill"></i> Nova Categoria
                     </Button>
                 )}
             </div>
@@ -155,8 +153,8 @@ export default function TabelaTiposCacambas(props) {
                     <h5 className="mb-3 text-secondary"><i className="bi bi-funnel"></i> Filtros de Busca</h5>
                     <Row className="g-2">
                         <Col md={6}>
-                            <FloatingLabel label="Nome do Modelo">
-                                <Form.Control name="nome" value={props.filtros.nome} onChange={manipulaMudanca} />
+                            <FloatingLabel label="Nome da Categoria">
+                                <Form.Control name="nome" value={props.filtros.nome} onChange={manipulaMudanca} placeholder="Buscar por nome..." />
                             </FloatingLabel>
                         </Col>
                         <Col md={4}>
@@ -182,34 +180,30 @@ export default function TabelaTiposCacambas(props) {
                 <Table hover className="mb-0 fs-5">
                     <thead className="table-dark">
                         <tr>
-                            <th className="px-4">Nome / Descrição</th>
-                            <th className="text-center">Volume</th>
-                            <th className="text-center">Preço Unit.</th>
-                            <th className="text-center">Cadastro</th>
+                            <th className="px-4">Nome da Categoria</th>
+                            <th className="text-center">Margem Lucro</th>
+                            <th className="text-center">Comissão Padrão</th>
+                            <th className="text-center">Datas</th>
                             <th className="text-center">Situação</th>
                             <th className="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {tipocacambas.map((item) => (
+                        {categoriasgrupo.map((item) => (
                             <tr key={item.id} className="align-middle" style={{ height: '80px' }}>
                                 <td className="px-4">
-                                    {/* Aumentado de padrão para fs-5 e o small para fs-6 */}
                                     <div className="fw-bold text-primary">{item.nome}</div>
-                                    <div className="text-muted d-block text-truncate fs-6" style={{maxWidth: '300px'}}>
-                                        {item.descricao || "Sem descrição"}
-                                    </div>
+                                    <small className="text-muted">ID: {item.id}</small>
                                 </td>
                                 <td className="text-center">
-                                    {/* Badge um pouco maior com fs-5 */}
-                                    <span className="badge bg-secondary fs-5">{item.volume} m³</span>
+                                    <span className="badge bg-info text-dark fs-6">{item.margem_lucro}%</span>
                                 </td>
                                 <td className="text-center fw-bold text-success">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.preco)}
+                                    {item.comissao_padrao}%
                                 </td>
                                 <td className="text-center" style={{ fontSize: '0.9rem' }}>
-                                    <div>{new Date(item.criado_em).toLocaleDateString('pt-BR')}</div>
-                                    <div className="text-muted">Atu: {new Date(item.atualizado_em).toLocaleDateString('pt-BR')}</div>
+                                    <div>Criado: {new Date(item.criado).toLocaleDateString('pt-BR')}</div>
+                                    <div className="text-muted">Atu: {item.atualizado != null ? new Date(item.atualizado).toLocaleDateString('pt-BR') : 'N/A'}</div>
                                 </td>
                                 <td className="text-center">
                                     <span className={`badge rounded-pill p-2 ${item.ativo ? 'bg-success' : 'bg-danger'}`} style={{ minWidth: '100px' }}>
@@ -218,19 +212,15 @@ export default function TabelaTiposCacambas(props) {
                                 </td>
                                 <td className="text-center">
                                     {props.modoSelecao ? (
-                                        <Button 
-                                            variant="success" 
-                                            className="shadow-sm" 
-                                            onClick={() => props.onSelecionar(item)}
-                                        >
+                                        <Button variant="success" className="shadow-sm" onClick={() => props.onSelecionar(item)}>
                                             <i className="bi bi-check2-square me-1"></i> Selecionar
                                         </Button>
                                     ) : (
                                         <div className="d-flex justify-content-center gap-3">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarTipo(item)}>
+                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarCategoria(item)}>
                                                 <i className="bi bi-pencil-fill fs-5"></i>
                                             </Button>
-                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirTipo(item)}>
+                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirCategoria(item)}>
                                                 <i className="bi bi-trash-fill fs-5"></i>
                                             </Button>
                                         </div>
@@ -244,7 +234,7 @@ export default function TabelaTiposCacambas(props) {
                 {/* RODAPÉ E PAGINAÇÃO */}
                 <div className="d-flex justify-content-between align-items-center p-3 bg-light border-top flex-wrap gap-2">
                     <div className="text-muted small">
-                        Exibindo <strong>{tipocacambas.length}</strong> de <strong>{totalRegistros}</strong> tipos de caçambas
+                        Exibindo <strong>{categoriasgrupo.length}</strong> de <strong>{totalRegistros}</strong> categorias de grupos
                     </div>
 
                     <Pagination className="mb-0 shadow-sm">
@@ -271,7 +261,7 @@ export default function TabelaTiposCacambas(props) {
                 </div>
             </div>
 
-            {/* MODAL DE EXCLUSÃO (Adaptado) */}
+            {/* MODAL DE EXCLUSÃO */}
             <Modal
                 show={mostrarConfirmacao} 
                 onHide={() => setMostrarConfirmacao(false)}
@@ -293,9 +283,9 @@ export default function TabelaTiposCacambas(props) {
                     </div>
                     <h5>Você tem certeza?</h5>
                     <p className="text-muted">
-                        Esta ação não poderá ser desfeita. O tipo de caçamba selecionado 
+                        Esta ação não poderá ser desfeita. A categoria de Grupo selecionado 
                         <strong className="text-danger fw-bold">
-                            {tipoParaExcluir ? ` ${tipoParaExcluir.nome} ` : ""}
+                            {categoriaParaExcluir ? ` ${categoriaParaExcluir.nome} ` : ""}
                         </strong> 
                         será removido permanentemente do sistema.
                     </p>

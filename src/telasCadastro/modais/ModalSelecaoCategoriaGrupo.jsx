@@ -1,15 +1,14 @@
 import { Modal, Button } from "react-bootstrap";
 import { useState } from "react";
-import TabelaTiposCacambas from "../tabelas/TabelaTipoCacambas";
+import TabelaCategoriaGrupo from "../tabelas/TabelaCategoriaGrupos";
 
-export default function ModalSelecaoTipo(props) {
-    // Estados internos do Modal para a busca de tipos
+export default function ModalSelecaoCategoriaGrupo(props) {
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [itensPorPagina, setItensPorPagina] = useState(5);
     const [filtros, setFiltros] = useState({
         nome: "",
-        volume: "",
-        descricao: "",
+        margem_lucro: "",
+        comissao_padrao: "",
         ativo: "true"
     });
 
@@ -24,18 +23,18 @@ export default function ModalSelecaoTipo(props) {
             <Modal.Header closeButton className="bg-primary text-white">
                 <Modal.Title>
                     <i className="bi bi-search me-2"></i>
-                    Selecionar Tipo de Caçamba
+                    Selecionar Grupo de Categoria
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body style={{ backgroundColor: '#f8f9fa' }}>
                 {/* Reutilizamos sua tabela original com a prop modoSelecao */}
-                <TabelaTiposCacambas 
+                <TabelaCategoriaGrupo 
                     modoSelecao={true} 
-                    onSelecionar={(tipo) => {
-                        props.onSelecionar(tipo); // Passa o tipo escolhido para o form
+                    onSelecionar={(categoriaGrupo) => {
+                        props.onSelecionar(categoriaGrupo); // Passa o grupo de categoria escolhido para o form
                         props.onHide();          // Fecha o modal
                     }}
-                    // Passando os estados exigidos pela sua tabela de tipos
+                    // Passando os estados exigidos pela sua tabela de grupos de categoria
                     paginaAtual={paginaAtual}
                     setPaginaAtual={setPaginaAtual}
                     itensPorPagina={itensPorPagina}

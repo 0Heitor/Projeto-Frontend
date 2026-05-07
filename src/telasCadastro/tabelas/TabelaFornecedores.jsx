@@ -1,14 +1,14 @@
 import { Button, Container, Spinner, Table, Modal, Col, FloatingLabel, Form, Card, Row, Pagination } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
-import { buscarTiposCacambas, removerTipoCacamba } from "../../redux/redutores/tipocacambaReducer";
+import { buscarFornecedores, removerFornecedor } from "../../redux/redutores/fornecedorReducer";
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 
-export default function TabelaTiposCacambas(props) {
-    const { estado, mensagem, tipocacambas, totalRegistros } = useSelector(state => state.tipocacamba);
+export default function TabelaFornecedores(props) {
+    const { estado, mensagem, fornecedores, totalRegistros } = useSelector(state => state.fornecedor);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-    const [tipoParaExcluir, setTipoParaExcluir] = useState(null);
+    const [fornecedorParaExcluir, setFornecedorParaExcluir] = useState(null);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
@@ -18,22 +18,22 @@ export default function TabelaTiposCacambas(props) {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
     }
 
-    function excluirTipo(tipo) {
-        setTipoParaExcluir(tipo);
+    function excluirFornecedor(fornecedor) {
+        setFornecedorParaExcluir(fornecedor);
         setMostrarConfirmacao(true);
     }
 
     function confirmarExclusao() {
-        if (tipoParaExcluir) {
-            dispatch(removerTipoCacamba(tipoParaExcluir));
+        if (fornecedorParaExcluir) {
+            dispatch(removerFornecedor(fornecedorParaExcluir));
             setMostrarConfirmacao(false);
-            setTipoParaExcluir(null);
+            setFornecedorParaExcluir(null);
             buscarComFiltro();
         }
     }
 
-    function editarTipo(tipo) {
-        props.setTipoCacambaParaEdicao(tipo);
+    function editarFornecedor(fornecedor) {
+        props.setFornecedorParaEdicao(fornecedor);
         props.setModoEdicao(true);
         props.exibirFormulario(true);
     }
@@ -45,7 +45,7 @@ export default function TabelaTiposCacambas(props) {
             limit: props.itensPorPagina,
             offset: 0
         };
-        dispatch(buscarTiposCacambas(novosFiltros));
+        dispatch(buscarFornecedores(novosFiltros));
     }
 
     function mudarPagina(numero) {
@@ -56,30 +56,29 @@ export default function TabelaTiposCacambas(props) {
             limit: props.itensPorPagina,
             offset: novoOffset
         };
-        dispatch(buscarTiposCacambas(novosFiltros));
+        dispatch(buscarFornecedores(novosFiltros));
     }
 
     function mudarQtdItens(novaQuantidade) {
-            const qtd = Number(novaQuantidade);
-            props.setItensPorPagina(qtd);
-            props.setPaginaAtual(1);
-            const novosFiltros = {
-                ...props.filtros,
-                limit: qtd,
-                offset: 0
-            };
-            dispatch(buscarCacambas(novosFiltros));
-        }
+        const qtd = Number(novaQuantidade);
+        props.setItensPorPagina(qtd);
+        props.setPaginaAtual(1);
+        const novosFiltros = {
+            ...props.filtros,
+            limit: qtd,
+            offset: 0
+        };
+        dispatch(buscarFornecedores(novosFiltros));
+    }
 
     useEffect(() => {
-        dispatch(buscarTiposCacambas({
+        dispatch(buscarFornecedores({
             ...props.filtros,
             limit: props.itensPorPagina,
             offset: props.itensPorPagina * (props.paginaAtual - 1)
         }));
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
-    // Lógica de Toasts (Mantida a original)
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
@@ -93,21 +92,12 @@ export default function TabelaTiposCacambas(props) {
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { 
-                toastId: "erro", 
-                theme: "dark",
-                autoClose: 5000,
-                pauseOnHover: true
-            });
+            toast.error(`Ops! ${mensagem}`, { toastId: "erro", theme: "dark" });
         } 
         else if (estado === ESTADO.OCIOSO) {
             toast.dismiss("processando");
             if (!sucessoExibido.current) {
-                toast.success("Tipos de Caçambas carregadas com sucesso!", {
-                    toastId: "sucesso-carga",
-                    autoClose: 3000,
-                    theme: "light"
-                });
+                toast.success("Fornecedores carregados com sucesso!", { toastId: "sucesso-carga", autoClose: 2000 });
                 sucessoExibido.current = true;
             }
         }
@@ -116,11 +106,7 @@ export default function TabelaTiposCacambas(props) {
     let itensPaginacao = [];
     for (let numero = 1; numero <= totalDePaginas; numero++) {
         itensPaginacao.push(
-            <Pagination.Item
-                key={numero}
-                active={numero === props.paginaAtual}
-                onClick={() => mudarPagina(numero)}
-            >
+            <Pagination.Item key={numero} active={numero === props.paginaAtual} onClick={() => mudarPagina(numero)}>
                 {numero}
             </Pagination.Item>
         );
@@ -132,8 +118,8 @@ export default function TabelaTiposCacambas(props) {
             {/* CABEÇALHO */}
             <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                 <div>
-                    <h2 className="text-primary mb-0">Tipos de Caçamba</h2>
-                    <small className="text-muted">Gerencie modelos, volumes e preços das caçambas</small>
+                    <h2 className="text-primary mb-0">Fornecedores</h2>
+                    <small className="text-muted">Gerencie sua rede de parceiros e fornecedores</small>
                 </div>
                 {!props.modoSelecao && (
                     <Button 
@@ -144,23 +130,33 @@ export default function TabelaTiposCacambas(props) {
                             props.exibirFormulario(true);
                         }}
                     >
-                        <i className="bi bi-plus-circle-fill"></i> Novo Tipo
+                        <i className="bi bi-plus-circle-fill"></i> Novo Fornecedor
                     </Button>
                 )}
             </div>
 
-            {/* FILTROS */}
+            {/* FILTROS ADAPTADOS */}
             <Card className="mb-4 border-0 shadow-sm bg-light">
                 <Card.Body>
                     <h5 className="mb-3 text-secondary"><i className="bi bi-funnel"></i> Filtros de Busca</h5>
                     <Row className="g-2">
-                        <Col md={6}>
-                            <FloatingLabel label="Nome do Modelo">
-                                <Form.Control name="nome" value={props.filtros.nome} onChange={manipulaMudanca} />
+                        <Col md={2}>
+                            <FloatingLabel label="Código">
+                                <Form.Control name="codigo" value={props.filtros.codigo} onChange={manipulaMudanca} placeholder="Código" />
                             </FloatingLabel>
                         </Col>
                         <Col md={4}>
-                            <FloatingLabel label="Situação">
+                            <FloatingLabel label="Nome Fantasia">
+                                <Form.Control name="nome_fantasia" value={props.filtros.nome_fantasia} onChange={manipulaMudanca} placeholder="Nome Fantasia" />
+                            </FloatingLabel>
+                        </Col>
+                        <Col md={3}>
+                            <FloatingLabel label="CNPJ">
+                                <Form.Control name="cnpj" value={props.filtros.cnpj} onChange={manipulaMudanca} placeholder="CNPJ" />
+                            </FloatingLabel>
+                        </Col>
+                        <Col md={2}>
+                            <FloatingLabel label="Status">
                                 <Form.Select name="ativo" value={props.filtros.ativo} onChange={manipulaMudanca}>
                                     <option value="">Todos</option>
                                     <option value="true">Ativos</option>
@@ -168,7 +164,7 @@ export default function TabelaTiposCacambas(props) {
                                 </Form.Select>
                             </FloatingLabel>
                         </Col>
-                        <Col md={2} className="d-flex align-items-center">
+                        <Col md={1} className="d-flex align-items-center">
                             <Button variant="primary" className="w-100 py-3" onClick={buscarComFiltro}>
                                 <i className="bi bi-search"></i> Buscar
                             </Button>
@@ -179,40 +175,36 @@ export default function TabelaTiposCacambas(props) {
 
             {/* TABELA */}
             <div className="table-responsive shadow-sm rounded border">
-                <Table hover className="mb-0 fs-5">
+                <Table hover className="mb-0">
                     <thead className="table-dark">
                         <tr>
-                            <th className="px-4">Nome / Descrição</th>
-                            <th className="text-center">Volume</th>
-                            <th className="text-center">Preço Unit.</th>
-                            <th className="text-center">Cadastro</th>
-                            <th className="text-center">Situação</th>
+                            <th>Código</th>
+                            <th>Fornecedor / CNPJ</th>
+                            <th>Contato</th>
+                            <th>Localização</th>
+                            <th className="text-center">Status</th>
                             <th className="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {tipocacambas.map((item) => (
-                            <tr key={item.id} className="align-middle" style={{ height: '80px' }}>
+                        {fornecedores.map((item) => (
+                            <tr key={item.id} className="align-middle">
                                 <td className="px-4">
-                                    {/* Aumentado de padrão para fs-5 e o small para fs-6 */}
-                                    <div className="fw-bold text-primary">{item.nome}</div>
-                                    <div className="text-muted d-block text-truncate fs-6" style={{maxWidth: '300px'}}>
-                                        {item.descricao || "Sem descrição"}
-                                    </div>
+                                    <div className="fw-bold text-primary" style={{ fontSize: '1.2rem' }}>{item.codigo}</div>
+                                </td>
+                                <td>
+                                    <div className="fw-bold text-primary">{item.nome_fantasia}</div>
+                                    <small className="text-muted">{item.cnpj}</small>
+                                </td>
+                                <td>
+                                    <div><i className="bi bi-telephone me-1"></i>{item.telefone}</div>
+                                </td>
+                                <td>
+                                    <small>{item.cidade} - {item.uf}</small>
+                                    <div className="text-muted" style={{fontSize: '0.8rem'}}>{item.bairro}</div>
                                 </td>
                                 <td className="text-center">
-                                    {/* Badge um pouco maior com fs-5 */}
-                                    <span className="badge bg-secondary fs-5">{item.volume} m³</span>
-                                </td>
-                                <td className="text-center fw-bold text-success">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.preco)}
-                                </td>
-                                <td className="text-center" style={{ fontSize: '0.9rem' }}>
-                                    <div>{new Date(item.criado_em).toLocaleDateString('pt-BR')}</div>
-                                    <div className="text-muted">Atu: {new Date(item.atualizado_em).toLocaleDateString('pt-BR')}</div>
-                                </td>
-                                <td className="text-center">
-                                    <span className={`badge rounded-pill p-2 ${item.ativo ? 'bg-success' : 'bg-danger'}`} style={{ minWidth: '100px' }}>
+                                    <span className={`badge rounded-pill ${item.ativo ? 'bg-success' : 'bg-danger'}`}>
                                         {item.ativo ? "ATIVO" : "INATIVO"}
                                     </span>
                                 </td>
@@ -227,10 +219,10 @@ export default function TabelaTiposCacambas(props) {
                                         </Button>
                                     ) : (
                                         <div className="d-flex justify-content-center gap-3">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarTipo(item)}>
+                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarFornecedor(item)}>
                                                 <i className="bi bi-pencil-fill fs-5"></i>
                                             </Button>
-                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirTipo(item)}>
+                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirFornecedor(item)}>
                                                 <i className="bi bi-trash-fill fs-5"></i>
                                             </Button>
                                         </div>
@@ -244,7 +236,7 @@ export default function TabelaTiposCacambas(props) {
                 {/* RODAPÉ E PAGINAÇÃO */}
                 <div className="d-flex justify-content-between align-items-center p-3 bg-light border-top flex-wrap gap-2">
                     <div className="text-muted small">
-                        Exibindo <strong>{tipocacambas.length}</strong> de <strong>{totalRegistros}</strong> tipos de caçambas
+                        Exibindo <strong>{fornecedores.length}</strong> de <strong>{totalRegistros}</strong> fornecedores
                     </div>
 
                     <Pagination className="mb-0 shadow-sm">
@@ -271,7 +263,7 @@ export default function TabelaTiposCacambas(props) {
                 </div>
             </div>
 
-            {/* MODAL DE EXCLUSÃO (Adaptado) */}
+            {/* MODAL DE EXCLUSÃO */}
             <Modal
                 show={mostrarConfirmacao} 
                 onHide={() => setMostrarConfirmacao(false)}
@@ -293,9 +285,9 @@ export default function TabelaTiposCacambas(props) {
                     </div>
                     <h5>Você tem certeza?</h5>
                     <p className="text-muted">
-                        Esta ação não poderá ser desfeita. O tipo de caçamba selecionado 
+                        Esta ação não poderá ser desfeita. O fornecedor selecionado 
                         <strong className="text-danger fw-bold">
-                            {tipoParaExcluir ? ` ${tipoParaExcluir.nome} ` : ""}
+                            {fornecedorParaExcluir ? ` ${fornecedorParaExcluir.nome_fantasia} ` : ""}
                         </strong> 
                         será removido permanentemente do sistema.
                     </p>

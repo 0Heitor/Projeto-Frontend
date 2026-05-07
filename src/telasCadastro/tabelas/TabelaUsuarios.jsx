@@ -14,7 +14,7 @@ export default function TabelaUsuarios(props){
     //const [paginaAtual, setPaginaAtual] = useState(props.paginaAtual);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
-    const sucessoExibido = useRef(true);
+    const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
     
     /*const [filtros, setFiltros] = useState({
@@ -38,6 +38,7 @@ export default function TabelaUsuarios(props){
             dispatch(removerUsuario(usuarioParaExcluir));
             setMostrarConfirmacao(false);
             setUsuarioParaExcluir(null);
+            buscarComFiltro();
         }
     }
 

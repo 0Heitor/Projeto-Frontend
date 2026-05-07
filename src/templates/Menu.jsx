@@ -19,6 +19,9 @@ export default function Menu() {
                             title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-plus-circle me-2"></i> Cadastros</span>} 
                             id="cadastros-dropdown"
                         >
+                            <NavDropdown.Item as={Link} to="/Sistema/categorias/sub-grupo" className="fs-6 py-2">Categorias de Sub-Grupo</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/Sistema/categorias/grupo" className="fs-6 py-2">Categorias de Grupo</NavDropdown.Item>
+                            <NavDropdown.Divider />
                             <NavDropdown.Item as={Link} to="/Sistema/tipos/cacambas" className="fs-6 py-2">Tipos de Caçambas</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/cacambas" className="fs-6 py-2">Caçambas</NavDropdown.Item>
                             <NavDropdown.Divider />

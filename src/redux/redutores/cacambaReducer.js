@@ -71,7 +71,7 @@ export const adicionarCacamba = createAsyncThunk('cacambas/adicionar', async (ca
         return{
             status: false,
             mensagem: 'Ocorreu um erro ao adicionar a caçamba.',
-            usuario
+            cacamba
         }
     }
 });

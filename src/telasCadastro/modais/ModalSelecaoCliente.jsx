@@ -1,15 +1,14 @@
 import { Modal, Button } from "react-bootstrap";
 import { useState } from "react";
-import TabelaTiposCacambas from "../tabelas/TabelaTipoCacambas";
+import TabelaClientes from "../tabelas/TabelaClientes";
 
-export default function ModalSelecaoTipo(props) {
-    // Estados internos do Modal para a busca de tipos
+export default function ModalSelecaoCliente(props) {
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [itensPorPagina, setItensPorPagina] = useState(5);
     const [filtros, setFiltros] = useState({
         nome: "",
-        volume: "",
-        descricao: "",
+        cpf_cnpj: "",
+        observacoes: "",
         ativo: "true"
     });
 
@@ -24,16 +23,16 @@ export default function ModalSelecaoTipo(props) {
             <Modal.Header closeButton className="bg-primary text-white">
                 <Modal.Title>
                     <i className="bi bi-search me-2"></i>
-                    Selecionar Tipo de Caçamba
+                    Selecionar Cliente
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body style={{ backgroundColor: '#f8f9fa' }}>
                 {/* Reutilizamos sua tabela original com a prop modoSelecao */}
-                <TabelaTiposCacambas 
+                <TabelaFornecedores
                     modoSelecao={true} 
-                    onSelecionar={(tipo) => {
-                        props.onSelecionar(tipo); // Passa o tipo escolhido para o form
-                        props.onHide();          // Fecha o modal
+                    onSelecionar={(cliente) => {
+                        props.onSelecionar(cliente); // Passa o tipo escolhido para o form
+                        props.onHide();
                     }}
                     // Passando os estados exigidos pela sua tabela de tipos
                     paginaAtual={paginaAtual}

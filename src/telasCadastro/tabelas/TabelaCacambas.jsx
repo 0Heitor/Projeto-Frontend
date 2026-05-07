@@ -28,6 +28,7 @@ export default function TabelaCacambas(props){
             dispatch(removerCacamba(cacambaParaExcluir));
             setMostrarConfirmacao(false);
             setCacambaParaExcluir(null);
+            buscarComFiltro();
         }
     }
 
