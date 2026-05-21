@@ -1,4 +1,5 @@
-//import TelaCadastroProduto from "./telasCadastro/TelaCadastroProduto";
+import TelaCadastroProduto from "./telasCadastro/TelaCadastroProduto";
+import TelaCadastroCompra from "./telasCadastro/TelaCadastroCompra";
 import TelaCadastroCliente from "./telasCadastro/TelaCadastroCliente";
 import TelaCadastroFornecedor from "./telasCadastro/TelaCadastroFornecedor";
 import TelaCadastroCategoriaGrupo from "./telasCadastro/TelaCadastroCategoriaGrupo";
@@ -36,13 +37,12 @@ function App() {
               <Route path="/Sistema/produtos" element={<TelaCadastroProduto/>} />
               */}
               
-              <Route path="/login" element={<TelaLogin />} />
-              <Route path="*" element={<Navigate to="/login" />} />
-
               <Route path="/Sistema/usuarios" element={<PrivateRoute> <TelaCadastroUsuario/> </PrivateRoute> } />
               <Route path="/Sistema/fornecedores" element={<PrivateRoute> <TelaCadastroFornecedor/> </PrivateRoute> } />
               <Route path="/Sistema/clientes" element={<PrivateRoute> <TelaCadastroCliente/> </PrivateRoute> } />
+              <Route path="/Sistema/compras" element={<PrivateRoute> <TelaCadastroCompra/> </PrivateRoute> } />
               <Route path="/Sistema/cacambas" element={<PrivateRoute> <TelaCadastroCacamba/> </PrivateRoute>} />
+              <Route path="/Sistema/produtos" element={<PrivateRoute> <TelaCadastroProduto/> </PrivateRoute> } />
               <Route path="/Sistema/tipos/cacambas" element={<PrivateRoute> <TelaCadastroTipoCacamba/> </PrivateRoute>} />
               <Route path="/Sistema/categorias/grupo" element={<PrivateRoute> <TelaCadastroCategoriaGrupo/> </PrivateRoute>} />
               <Route path="/Sistema/categorias/sub-grupo" element={<PrivateRoute> <TelaCadastroCategoriaSubGrupo/> </PrivateRoute>} />

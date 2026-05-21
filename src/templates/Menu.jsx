@@ -28,6 +28,7 @@ export default function Menu() {
                             <NavDropdown.Item as={Link} to="/Sistema/clientes" className="fs-6 py-2">Clientes</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/fornecedores" className="fs-6 py-2">Fornecedores</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/produtos" className="fs-6 py-2">Produtos</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/Sistema/compras" className="fs-6 py-2">Compras</NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item as={Link} to="/Sistema/usuarios" className="fs-6 py-2">Usuários</NavDropdown.Item>
                         </NavDropdown>

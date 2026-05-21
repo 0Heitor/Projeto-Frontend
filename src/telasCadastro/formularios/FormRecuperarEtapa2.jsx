@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 
-export default function FormRecuperarEtapa2({ setEtapa, dados, setDados }) {
+export default function FormRecuperarEtapa2({ setEtapa, dados }) {
     const [novaSenha, setNovaSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -14,25 +14,22 @@ export default function FormRecuperarEtapa2({ setEtapa, dados, setDados }) {
 
     async function finalizarTroca(e) {
         e.preventDefault();
-    
         if (novaSenha !== confirmarSenha) {
             return toast.error("As senhas não coincidem!");
         }
-
         try {
             const resp = await dispatch(atualizarUsuario({ ...dados, senha: novaSenha })).unwrap();
-            
-            if (resp && (resp.status === true || resp.status === 'true')) {
+            if(resp.status){
                 toast.success("Senha redefinida com sucesso!");
-                setEtapa('login');
                 setDados({ email: "", codigo: "" });
-                return;
-            } else {
-                toast.error("O servidor retornou um erro inesperado.");
+                setEtapa('login');
             }
-        } catch (error) {
-            console.log("Linha do erro:", error.stack);
-            toast.error("Erro técnico ao redefinir senha.");
+            else{
+                toast.error("Erro ao redefinir senha.");
+            }
+        } 
+        catch (error) {
+            toast.error("Erro ao redefinir senha.");
         }
     }
 
