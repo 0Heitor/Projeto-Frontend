@@ -1,5 +1,6 @@
 import TelaCadastroProduto from "./telasCadastro/TelaCadastroProduto";
 import TelaCadastroCompra from "./telasCadastro/TelaCadastroCompra";
+import TelaCadastroLocacao from "./telasCadastro/TelaCadastroLocacao";
 import TelaCadastroCliente from "./telasCadastro/TelaCadastroCliente";
 import TelaCadastroFornecedor from "./telasCadastro/TelaCadastroFornecedor";
 import TelaCadastroCategoriaGrupo from "./telasCadastro/TelaCadastroCategoriaGrupo";
@@ -37,6 +38,9 @@ function App() {
               <Route path="/Sistema/produtos" element={<TelaCadastroProduto/>} />
               */}
               
+              <Route path="/login" element={<TelaLogin />} />
+              <Route path="*" element={<Navigate to="/login" />} />
+
               <Route path="/Sistema/usuarios" element={<PrivateRoute> <TelaCadastroUsuario/> </PrivateRoute> } />
               <Route path="/Sistema/fornecedores" element={<PrivateRoute> <TelaCadastroFornecedor/> </PrivateRoute> } />
               <Route path="/Sistema/clientes" element={<PrivateRoute> <TelaCadastroCliente/> </PrivateRoute> } />

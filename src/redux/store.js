@@ -5,6 +5,7 @@ import fornecedorSlice from './redutores/fornecedorReducer.js';
 import categoriaGrupoSlice from './redutores/categoriagrupoReducer.js';
 import categoriaSubGrupoSlice from './redutores/categoriasubgrupoReducer.js';
 import compraSlice from './redutores/compraReducer.js';
+import locacaoSlice from './redutores/locacaoReducer.js';
 import usuarioSlice from './redutores/usuarioReducer.js';
 import cacambaSlice from './redutores/cacambaReducer.js';
 import tipocacambaSlice from './redutores/tipocacambaReducer.js';
@@ -19,7 +20,8 @@ const store = configureStore({
         fornecedor: fornecedorSlice,
         categoriagrupo: categoriaGrupoSlice,
         categoriasubgrupo: categoriaSubGrupoSlice,
-        compra: compraSlice
+        compra: compraSlice,
+        locacao: locacaoSlice
     }
 });
 

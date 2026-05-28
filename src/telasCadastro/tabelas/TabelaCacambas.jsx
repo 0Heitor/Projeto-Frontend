@@ -241,14 +241,24 @@ export default function TabelaCacambas(props){
                                     </span>
                                 </td>
                                 <td className="text-center">
-                                    <div className="d-flex justify-content-center gap-3">
-                                        <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarCacamba(item)}>
-                                            <i className="bi bi-pencil-fill fs-5"></i>
+                                    {props.modoSelecao ? (
+                                        <Button 
+                                            variant="success" 
+                                            className="shadow-sm" 
+                                            onClick={() => props.onSelecionar(item)}
+                                        >
+                                            <i className="bi bi-check2-square me-1"></i> Selecionar
                                         </Button>
-                                        <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirCacamba(item)}>
-                                            <i className="bi bi-trash-fill fs-5"></i>
-                                        </Button>
-                                    </div>
+                                    ) : (
+                                        <div className="d-flex justify-content-center gap-3">
+                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarCacamba(item)}>
+                                                <i className="bi bi-pencil-fill fs-5"></i>
+                                            </Button>
+                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirCacamba(item)}>
+                                                <i className="bi bi-trash-fill fs-5"></i>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ))}

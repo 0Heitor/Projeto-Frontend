@@ -37,7 +37,7 @@ export default function Menu() {
                             title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-cpu me-2"></i> Operações</span>} 
                             id="operacoes-dropdown"
                         >
-                            <NavDropdown.Item as={Link} to="/Sistema/agendamentos" className="fs-6 py-2">Agendamento de Caçambas</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/Sistema/locacoes" className="fs-6 py-2">Locações de Caçambas</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/vendas" className="fs-6 py-2">Vendas</NavDropdown.Item>
                         </NavDropdown>
 
