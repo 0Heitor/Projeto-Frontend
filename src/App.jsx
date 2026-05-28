@@ -45,6 +45,7 @@ function App() {
               <Route path="/Sistema/fornecedores" element={<PrivateRoute> <TelaCadastroFornecedor/> </PrivateRoute> } />
               <Route path="/Sistema/clientes" element={<PrivateRoute> <TelaCadastroCliente/> </PrivateRoute> } />
               <Route path="/Sistema/compras" element={<PrivateRoute> <TelaCadastroCompra/> </PrivateRoute> } />
+              <Route path="/Sistema/locacoes" element={<PrivateRoute> <TelaCadastroLocacao/> </PrivateRoute> } />
               <Route path="/Sistema/cacambas" element={<PrivateRoute> <TelaCadastroCacamba/> </PrivateRoute>} />
               <Route path="/Sistema/produtos" element={<PrivateRoute> <TelaCadastroProduto/> </PrivateRoute> } />
               <Route path="/Sistema/tipos/cacambas" element={<PrivateRoute> <TelaCadastroTipoCacamba/> </PrivateRoute>} />
