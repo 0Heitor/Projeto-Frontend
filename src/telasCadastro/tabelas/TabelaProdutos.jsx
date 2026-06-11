@@ -4,6 +4,7 @@ import { buscarProdutos, removerProduto } from "../../redux/redutores/produtoRed
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaProdutos(props) {
     const { estado, mensagem, produtos, totalRegistros } = useSelector(state => state.produto);
@@ -13,6 +14,9 @@ export default function TabelaProdutos(props) {
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
 
     const manipulaMudanca = (evento) => {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
@@ -118,7 +122,7 @@ export default function TabelaProdutos(props) {
                     <h2 className="text-primary mb-0 fw-bold">Catálogo de Produtos</h2>
                     <p className="text-muted mb-0">Gestão de preços, estoque e informações detalhadas</p>
                 </div>
-                {!props.modoSelecao && (
+                {(isAdmin && !props.modoSelecao) && (
                     <Button 
                         variant="success" 
                         className="d-flex align-items-center gap-2 shadow-sm"
@@ -174,7 +178,7 @@ export default function TabelaProdutos(props) {
                             <th className="text-end py-3">Preço de Venda</th>
                             <th className="text-center py-3">Estoque Atual</th>
                             <th className="text-center py-3">Status</th>
-                            <th className="text-center py-3" style={{ minWidth: '180px' }}>Ações</th>
+                            {(isAdmin || props.modoSelecao) &&<th className="text-center py-3" style={{ minWidth: '180px' }}>Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -208,22 +212,24 @@ export default function TabelaProdutos(props) {
                                         {item.ativo ? "ATIVO" : "INATIVO"}
                                     </Badge>
                                 </td>
-                                <td className="text-center py-3">
-                                    {props.modoSelecao ? (
-                                        <Button variant="success" className="w-100" onClick={() => props.onSelecionar(item)}>
-                                            Selecionar
-                                        </Button>
-                                    ) : (
-                                        <div className="d-flex justify-content-center gap-2">
-                                            <Button variant="outline-warning" className="d-flex align-items-center shadow-sm" onClick={() => editarProduto(item)}>
-                                                <i className="bi bi-pencil-square me-1"></i> Editar
+                                {(isAdmin || props.modoSelecao) && (    
+                                    <td className="text-center py-3">
+                                        {props.modoSelecao ? (
+                                            <Button variant="success" className="w-100" onClick={() => props.onSelecionar(item)}>
+                                                Selecionar
                                             </Button>
-                                            <Button variant="outline-danger" className="d-flex align-items-center shadow-sm" onClick={() => excluirProduto(item)}>
-                                                <i className="bi bi-trash3-fill me-1"></i> Excluir
-                                            </Button>
-                                        </div>
-                                    )}
-                                </td>
+                                        ) : (
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button variant="outline-warning" className="d-flex align-items-center shadow-sm" onClick={() => editarProduto(item)}>
+                                                    <i className="bi bi-pencil-square me-1"></i> Editar
+                                                </Button>
+                                                <Button variant="outline-danger" className="d-flex align-items-center shadow-sm" onClick={() => excluirProduto(item)}>
+                                                    <i className="bi bi-trash3-fill me-1"></i> Excluir
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

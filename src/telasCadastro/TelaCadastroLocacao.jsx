@@ -78,8 +78,8 @@ export default function TelaCadastroLocacao(props) {
         cliente: {
             nome: ''
         },
-        status: "AGENDADA",
-        ativo: "true"
+        status: "",
+        ativo: true
     }); 
     
     return(

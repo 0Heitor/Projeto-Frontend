@@ -238,7 +238,7 @@ export default function FormCadLocacao(props) {
                                                     >
                                                         <option value="AGENDADA">Agendada</option>
                                                         <option value="ENTREGUE">Entregue no Local</option>
-                                                        <option value="RECOLHIDA">Recolhida / Concluída</option>
+                                                        <option value="DISPONIVEL">Recolhida / Concluída</option>
                                                         <option value="MANUTENCAO">Enviada para Manutenção</option>
                                                     </Form.Select>
                                                 </td>

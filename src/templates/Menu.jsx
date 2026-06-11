@@ -1,7 +1,11 @@
 import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexto/AuthContext';
 
 export default function Menu() {
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
+
     return (
         // py-2 aumenta a altura da barra do menu
         <Navbar expand="lg" className="bg-white shadow-sm py-2 mb-4 border-bottom">
@@ -29,29 +33,37 @@ export default function Menu() {
                             <NavDropdown.Item as={Link} to="/Sistema/fornecedores" className="fs-6 py-2">Fornecedores</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/produtos" className="fs-6 py-2">Produtos</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/compras" className="fs-6 py-2">Compras</NavDropdown.Item>
-                            <NavDropdown.Divider />
-                            <NavDropdown.Item as={Link} to="/Sistema/usuarios" className="fs-6 py-2">Usuários</NavDropdown.Item>
+                            {isAdmin && (
+                                <>
+                                    <NavDropdown.Divider />
+                                    <NavDropdown.Item as={Link} to="/Sistema/usuarios" className="fs-6 py-2">Usuários</NavDropdown.Item>
+                                </>
+                            )}
                         </NavDropdown>
 
                         <NavDropdown 
                             title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-cpu me-2"></i> Operações</span>} 
                             id="operacoes-dropdown"
                         >
-                            <NavDropdown.Item as={Link} to="/Sistema/locacoes" className="fs-6 py-2">Locações de Caçambas</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/Sistema/locacoes" className="fs-6 py-2">Locação de Caçambas</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/vendas" className="fs-6 py-2">Vendas</NavDropdown.Item>
                         </NavDropdown>
 
-                        <Nav.Link as={Link} to="/Sistema/vizualizacao-agendamento" className="fs-5 fw-semibold text-dark">
-                            <i className="bi bi-map me-2"></i> Mapa
-                        </Nav.Link>
+                        {(isAdmin && (
+                            <Nav.Link as={Link} to="/Sistema/vizualizacao-agendamento" className="fs-5 fw-semibold text-dark">
+                                <i className="bi bi-map me-2"></i> Mapa
+                            </Nav.Link>
+                        ))}
 
-                        <NavDropdown 
-                            title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-file-earmark-bar-graph me-2"></i> Relatórios</span>} 
-                            id="relatorios-dropdown"
-                        >
-                            <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-saldos" className="fs-6 py-2">Relatório de Saldos</NavDropdown.Item>
-                            <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-vendas" className="fs-6 py-2">Relatório de Vendas</NavDropdown.Item>
-                        </NavDropdown>
+                        {(isAdmin && (
+                            <NavDropdown 
+                                title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-file-earmark-bar-graph me-2"></i> Relatórios</span>} 
+                                id="relatorios-dropdown"
+                            >
+                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-saldos" className="fs-6 py-2">Relatório de Saldos</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-vendas" className="fs-6 py-2">Relatório de Vendas</NavDropdown.Item>
+                            </NavDropdown>
+                        ))}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

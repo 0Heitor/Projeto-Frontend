@@ -4,6 +4,7 @@ import { buscarTiposCacambas, removerTipoCacamba } from "../../redux/redutores/t
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaTiposCacambas(props) {
     const { estado, mensagem, tipocacambas, totalRegistros } = useSelector(state => state.tipocacamba);
@@ -13,6 +14,9 @@ export default function TabelaTiposCacambas(props) {
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
 
     const manipulaMudanca = (evento) => {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
@@ -135,7 +139,7 @@ export default function TabelaTiposCacambas(props) {
                     <h2 className="text-primary mb-0">Tipos de Caçamba</h2>
                     <small className="text-muted">Gerencie modelos, volumes e preços das caçambas</small>
                 </div>
-                {!props.modoSelecao && (
+                {(isAdmin && !props.modoSelecao) && (
                     <Button 
                         variant="success" 
                         className="d-flex align-items-center gap-2 shadow-sm"
@@ -187,7 +191,7 @@ export default function TabelaTiposCacambas(props) {
                             <th className="text-center">Preço Unit.</th>
                             <th className="text-center">Cadastro</th>
                             <th className="text-center">Situação</th>
-                            <th className="text-center">Ações</th>
+                            {(isAdmin || props.modoSelecao) &&<th className="text-center">Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -216,26 +220,28 @@ export default function TabelaTiposCacambas(props) {
                                         {item.ativo ? "ATIVO" : "INATIVO"}
                                     </span>
                                 </td>
-                                <td className="text-center">
-                                    {props.modoSelecao ? (
-                                        <Button 
-                                            variant="success" 
-                                            className="shadow-sm" 
-                                            onClick={() => props.onSelecionar(item)}
-                                        >
-                                            <i className="bi bi-check2-square me-1"></i> Selecionar
-                                        </Button>
-                                    ) : (
-                                        <div className="d-flex justify-content-center gap-3">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarTipo(item)}>
-                                                <i className="bi bi-pencil-fill fs-5"></i>
+                                {(isAdmin || props.modoSelecao) && (
+                                    <td className="text-center">
+                                        {props.modoSelecao ? (
+                                            <Button 
+                                                variant="success" 
+                                                className="shadow-sm" 
+                                                onClick={() => props.onSelecionar(item)}
+                                            >
+                                                <i className="bi bi-check2-square me-1"></i> Selecionar
                                             </Button>
-                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirTipo(item)}>
-                                                <i className="bi bi-trash-fill fs-5"></i>
-                                            </Button>
-                                        </div>
-                                    )}
-                                </td>
+                                        ) : (
+                                            <div className="d-flex justify-content-center gap-3">
+                                                <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarTipo(item)}>
+                                                    <i className="bi bi-pencil-fill fs-5"></i>
+                                                </Button>
+                                                <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirTipo(item)}>
+                                                    <i className="bi bi-trash-fill fs-5"></i>
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

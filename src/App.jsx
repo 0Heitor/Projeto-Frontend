@@ -1,3 +1,4 @@
+import TelaVizualizacaoAgendamento from "./telasCadastro/TelaVizualizacaoAgendamento";
 import TelaCadastroProduto from "./telasCadastro/TelaCadastroProduto";
 import TelaCadastroCompra from "./telasCadastro/TelaCadastroCompra";
 import TelaCadastroLocacao from "./telasCadastro/TelaCadastroLocacao";
@@ -18,14 +19,16 @@ import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexto/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
-//import { Button } from 'react-bootstrap';
+import 'leaflet/dist/leaflet.css';
 
 function PrivateRoute({ children }) {
-    const { isLogged } = useAuth();
+    const { isLogged} = useAuth();
     return isLogged ? children : <Navigate to="/login" />;
 }
 
 function App() {
+  const { user } = useAuth();
+  const isAdmin = user?.nivel === "ADMIN";
   return (
     <div className="App">
       <AuthProvider></AuthProvider>
@@ -36,12 +39,13 @@ function App() {
               /*
 
               <Route path="/Sistema/produtos" element={<TelaCadastroProduto/>} />
+
               */}
               
               <Route path="/login" element={<TelaLogin />} />
               <Route path="*" element={<Navigate to="/login" />} />
 
-              <Route path="/Sistema/usuarios" element={<PrivateRoute> <TelaCadastroUsuario/> </PrivateRoute> } />
+              {isAdmin && (<Route path="/Sistema/usuarios" element={<PrivateRoute> <TelaCadastroUsuario/> </PrivateRoute> } />)}
               <Route path="/Sistema/fornecedores" element={<PrivateRoute> <TelaCadastroFornecedor/> </PrivateRoute> } />
               <Route path="/Sistema/clientes" element={<PrivateRoute> <TelaCadastroCliente/> </PrivateRoute> } />
               <Route path="/Sistema/compras" element={<PrivateRoute> <TelaCadastroCompra/> </PrivateRoute> } />
@@ -51,6 +55,7 @@ function App() {
               <Route path="/Sistema/tipos/cacambas" element={<PrivateRoute> <TelaCadastroTipoCacamba/> </PrivateRoute>} />
               <Route path="/Sistema/categorias/grupo" element={<PrivateRoute> <TelaCadastroCategoriaGrupo/> </PrivateRoute>} />
               <Route path="/Sistema/categorias/sub-grupo" element={<PrivateRoute> <TelaCadastroCategoriaSubGrupo/> </PrivateRoute>} />
+              <Route path="/Sistema/vizualizacao-agendamento" element={<PrivateRoute> <TelaVizualizacaoAgendamento/> </PrivateRoute>} />
               <Route path="/Sistema" element={<PrivateRoute> <TelaMenu/> </PrivateRoute>} />
               <Route path="/Sistema/*" element={<PrivateRoute> <Tela404/> </PrivateRoute>} />
             </Routes>

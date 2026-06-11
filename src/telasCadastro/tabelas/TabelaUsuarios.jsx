@@ -4,6 +4,7 @@ import { buscarUsuarios, removerUsuario } from "../../redux/redutores/usuarioRed
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaUsuarios(props){
 
@@ -16,6 +17,9 @@ export default function TabelaUsuarios(props){
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
     
     /*const [filtros, setFiltros] = useState({
         nome: "",
@@ -153,16 +157,18 @@ export default function TabelaUsuarios(props){
                     <h2 className="text-primary mb-0">Gestão de Usuários</h2>
                     <small className="text-muted">Visualize e gerencie os acessos ao sistema</small>
                 </div>
-                <Button 
-                    variant="success" 
-                    className="d-flex align-items-center gap-2 shadow-sm"
-                    onClick={() => {
-                        props.setModoEdicao(false);
-                        props.exibirFormulario(true);
-                    }}
-                >
-                    <i className="bi bi-person-plus-fill"></i> Novo Usuário
-                </Button>
+                {(isAdmin) && (
+                    <Button 
+                        variant="success" 
+                        className="d-flex align-items-center gap-2 shadow-sm"
+                        onClick={() => {
+                            props.setModoEdicao(false);
+                            props.exibirFormulario(true);
+                        }}
+                    >
+                        <i className="bi bi-person-plus-fill"></i> Novo Usuário
+                    </Button>
+                )}
             </div>
 
             {/* SEÇÃO DE FILTROS */}
@@ -233,7 +239,7 @@ export default function TabelaUsuarios(props){
                             <th>Nível</th>
                             <th>Status</th>
                             <th>Datas (Acesso/Criação)</th>
-                            <th className="text-center">Ações</th>
+                            {isAdmin &&<th className="text-center">Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -260,17 +266,19 @@ export default function TabelaUsuarios(props){
                                     <div><i className="bi bi-box-arrow-in-right me-2"></i> { usuario.ultimo_login ? new Date(usuario.ultimo_login).toLocaleString('pt-BR') : 'Nunca' }</div>
                                     <div className="text-muted"><i className="bi bi-calendar-plus me-2"></i> {new Date(usuario.criado).toLocaleString('pt-BR')}</div>
                                 </td>
-                                <td className="text-center">
-                                    <div className="d-flex justify-content-center gap-3"> {/* Aumentei o gap entre botões */}
-                                        {/* Removi o size="sm" para os botões ficarem maiores */}
-                                        <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarUsuario(usuario)} title="Editar">
-                                            <i className="bi bi-pencil-fill fs-5"></i>
-                                        </Button>
-                                        <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirUsuario(usuario)} title="Excluir">
-                                            <i className="bi bi-trash-fill fs-5"></i>
-                                        </Button>
-                                    </div>
-                                </td>
+                                {isAdmin && (
+                                    <td className="text-center">
+                                        <div className="d-flex justify-content-center gap-3"> {/* Aumentei o gap entre botões */}
+                                            {/* Removi o size="sm" para os botões ficarem maiores */}
+                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarUsuario(usuario)} title="Editar">
+                                                <i className="bi bi-pencil-fill fs-5"></i>
+                                            </Button>
+                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirUsuario(usuario)} title="Excluir">
+                                                <i className="bi bi-trash-fill fs-5"></i>
+                                            </Button>
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

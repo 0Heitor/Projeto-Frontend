@@ -1,22 +1,25 @@
 import { Button, Container, Spinner, Table, Modal, Col, FloatingLabel, Form, Card, Row, Pagination, Badge } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
-import { buscarLocacoes, removerLocacao } from "../../redux/redutores/locacaoReducer"; // Ajuste se necessário
+import { buscarLocacoes, removerLocacao } from "../../redux/redutores/locacaoReducer";
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaLocacoes(props) {
     const { estado, mensagem, locacoes, totalRegistros } = useSelector(state => state.locacao);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [locacaoParaExcluir, setLocacaoParaExcluir] = useState(null);
     
-    // Estados para o Modal de Itens da Caçamba
     const [mostrarItens, setMostrarItens] = useState(false);
     const [itensVisualizar, setItensVisualizar] = useState([]);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
 
     const manipulaMudanca = (evento) => {
         const { name, value } = evento.target;
@@ -193,6 +196,7 @@ export default function TabelaLocacoes(props) {
                                     value={props.filtros.status || ''}
                                     onChange={manipulaMudanca}
                                 >
+                                    <option value="">Todos</option>
                                     <option value="AGENDADA">AGENDADA</option>
                                     <option value="ENTREGUE">ENTREGUE</option>
                                     <option value="CONCLUIDA">CONCLUIDA</option>
@@ -206,9 +210,10 @@ export default function TabelaLocacoes(props) {
                             <FloatingLabel label="Registro">
                                 <Form.Select 
                                     name="ativo"
-                                    value={props.filtros.ativo || 'true'}
+                                    value={props.filtros.ativo}
                                     onChange={manipulaMudanca}
                                 >
+                                    <option value="">Todos</option>
                                     <option value="true">Ativos</option>
                                     <option value="false">Inativos/Excluídos</option>
                                 </Form.Select>
@@ -236,7 +241,7 @@ export default function TabelaLocacoes(props) {
                             <th>Status</th>
                             <th>Valor Total</th>
                             <th>Caçambas</th>
-                            <th>Ações</th>
+                            {isAdmin && <th>Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -268,23 +273,25 @@ export default function TabelaLocacoes(props) {
                                             <i className="bi bi-truck me-1"></i> {locacao.itens?.length || 0} Caçambas
                                         </Button>
                                     </td>
-                                    <td>
-                                        <div className="d-flex justify-content-center gap-2">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarLocacao(locacao)}>
-                                                <i className="bi bi-pencil-fill fs-5"></i>
-                                            </Button>
-                                            <Button 
-                                                variant="outline-danger" 
-                                                size="sm" 
-                                                className="p-2 d-flex align-items-center"
-                                                onClick={() => excluirLocacao(locacao)}
-                                                title="Excluir Locação"
-                                                disabled={locacao.ativo === false}
-                                            >
-                                                <i className="bi bi-trash-fill"></i>
-                                            </Button>
-                                        </div>
-                                    </td>
+                                    {isAdmin && (
+                                        <td>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarLocacao(locacao)}>
+                                                    <i className="bi bi-pencil-fill fs-5"></i>
+                                                </Button>
+                                                <Button 
+                                                    variant="outline-danger" 
+                                                    size="sm" 
+                                                    className="p-2 d-flex align-items-center"
+                                                    onClick={() => excluirLocacao(locacao)}
+                                                    title="Excluir Locação"
+                                                    disabled={locacao.ativo === false}
+                                                >
+                                                    <i className="bi bi-trash-fill"></i>
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         ) : (
@@ -386,8 +393,8 @@ export default function TabelaLocacoes(props) {
                                 <tr key={index}>
                                     <td className="fw-bold text-secondary">Caçamba #{item.cacamba?.id || item.itc_cac_id}</td>
                                     <td>
-                                        <Badge bg={item.status_item === 'RETIRADA' || item.status_item === 'CONCLUIDA' ? 'success' : 'secondary'}>
-                                            {item.status_item || 'AGENDADA'}
+                                        <Badge bg={item.status === 'RETIRADA' || item.status === 'CONCLUIDA' ? 'success' : 'secondary'}>
+                                            {item.status || 'AGENDADA'}
                                         </Badge>
                                     </td>
                                     <td>

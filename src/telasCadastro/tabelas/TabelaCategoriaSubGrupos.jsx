@@ -4,6 +4,7 @@ import { buscarCategoriasSubGrupo, removerCategoriasSubGrupo } from "../../redux
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaCategoriaSubGrupos(props) {
     const { estado, mensagem, categoriasubgrupo, totalRegistros } = useSelector(state => state.categoriasubgrupo);
@@ -13,6 +14,9 @@ export default function TabelaCategoriaSubGrupos(props) {
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
 
     const manipulaMudanca = (evento) => {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
@@ -123,7 +127,7 @@ export default function TabelaCategoriaSubGrupos(props) {
                     <h2 className="text-primary mb-0">Subgrupos de Categorias</h2>
                     <small className="text-muted">Gestão de subcategorias, NCM e localização física</small>
                 </div>
-                {!props.modoSelecao && (
+                {(isAdmin && !props.modoSelecao) && (
                     <Button variant="success" className="d-flex align-items-center gap-2 shadow-sm" onClick={() => { props.setModoEdicao(false); props.exibirFormulario(true); }}>
                         <i className="bi bi-plus-circle-fill"></i> Novo Subgrupo
                     </Button>
@@ -167,7 +171,7 @@ export default function TabelaCategoriaSubGrupos(props) {
                             <th className="text-center">NCM Padrão</th>
                             <th className="text-center">Localização</th>
                             <th className="text-center">Situação</th>
-                            <th className="text-center">Ações</th>
+                            {(isAdmin || props.modoSelecao) && <th className="text-center">Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -194,22 +198,24 @@ export default function TabelaCategoriaSubGrupos(props) {
                                         {item.ativo ? "ATIVO" : "INATIVO"}
                                     </span>
                                 </td>
-                                <td className="text-center">
-                                    {props.modoSelecao ? (
-                                        <Button variant="success" onClick={() => props.onSelecionar(item)}>
-                                            Selecionar
-                                        </Button>
-                                    ) : (
-                                        <div className="d-flex justify-content-center gap-3">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarSubGrupo(item)}>
-                                                <i className="bi bi-pencil-fill fs-5"></i>
+                                {(isAdmin || props.modoSelecao) && (
+                                    <td className="text-center">
+                                        {props.modoSelecao ? (
+                                            <Button variant="success" onClick={() => props.onSelecionar(item)}>
+                                                Selecionar
                                             </Button>
-                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirSubGrupo(item)}>
-                                                <i className="bi bi-trash-fill fs-5"></i>
-                                            </Button>
-                                        </div>
-                                    )}
-                                </td>
+                                        ) : (
+                                            <div className="d-flex justify-content-center gap-3">
+                                                <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarSubGrupo(item)}>
+                                                    <i className="bi bi-pencil-fill fs-5"></i>
+                                                </Button>
+                                                <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirSubGrupo(item)}>
+                                                    <i className="bi bi-trash-fill fs-5"></i>
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

@@ -4,19 +4,22 @@ import { buscarCompras, /*buscarComprasPorItem,*/ removerCompra } from "../../re
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaCompras(props) {
     const { estado, mensagem, compras, totalRegistros } = useSelector(state => state.compra);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [compraParaExcluir, setCompraParaExcluir] = useState(null);
     
-    // Estados para o Modal de Itens
     const [mostrarItens, setMostrarItens] = useState(false);
     const [itensVisualizar, setItensVisualizar] = useState([]);
 
     const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
+
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
 
     const manipulaMudanca = (evento) => {
         const { name, value } = evento.target;
@@ -133,9 +136,11 @@ export default function TabelaCompras(props) {
                     <h2 className="text-primary mb-0">Gestão de Compras</h2>
                     <small className="text-muted">Histórico de aquisições e fornecedores</small>
                 </div>
-                <Button variant="success" onClick={() => { props.setModoEdicao(false); props.exibirFormulario(true); }}>
-                    <i className="bi bi-cart-plus-fill me-2"></i> Nova Compra
-                </Button>
+                {isAdmin && (
+                    <Button variant="success" onClick={() => { props.setModoEdicao(false); props.exibirFormulario(true); }}>
+                        <i className="bi bi-cart-plus-fill me-2"></i> Nova Compra
+                    </Button>
+                )}  
             </div>
 
             {/* SEÇÃO DE FILTROS PARA COMPRAS */}
@@ -214,7 +219,7 @@ export default function TabelaCompras(props) {
                             <th className="text-start">Fornecedor</th>
                             <th>Valor Total</th>
                             <th>Itens</th>
-                            <th>Ações</th>
+                            {isAdmin && <th>Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -250,22 +255,24 @@ export default function TabelaCompras(props) {
                                             <i className="bi bi-box-seam me-1"></i> {compra.itens?.length || 0} Itens
                                         </Button>
                                     </td>
-                                    <td>
-                                        <div className="d-flex justify-content-center gap-2">
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarCompra(compra)}>
-                                                <i className="bi bi-pencil-fill fs-5"></i>
-                                            </Button>
-                                            <Button 
-                                                variant="outline-danger" 
-                                                size="sm" 
-                                                className="p-2 d-flex align-items-center"
-                                                onClick={() => excluirCompra(compra)}
-                                                title="Excluir Compra"
-                                            >
-                                                <i className="bi bi-trash-fill"></i>
-                                            </Button>
-                                        </div>
-                                    </td>
+                                    {isAdmin && (
+                                        <td>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarCompra(compra)}>
+                                                    <i className="bi bi-pencil-fill fs-5"></i>
+                                                </Button>
+                                                <Button 
+                                                    variant="outline-danger" 
+                                                    size="sm" 
+                                                    className="p-2 d-flex align-items-center"
+                                                    onClick={() => excluirCompra(compra)}
+                                                    title="Excluir Compra"
+                                                >
+                                                    <i className="bi bi-trash-fill"></i>
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         ) : (
