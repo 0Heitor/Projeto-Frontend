@@ -47,6 +47,7 @@ export default function Menu() {
                         >
                             <NavDropdown.Item as={Link} to="/Sistema/locacoes" className="fs-6 py-2">Locação de Caçambas</NavDropdown.Item>
                             <NavDropdown.Item as={Link} to="/Sistema/vendas" className="fs-6 py-2">Vendas</NavDropdown.Item>
+                            <NavDropdown.Item as={Link} to="/Sistema/financeiros" className="fs-6 py-2">Contas a Receber</NavDropdown.Item>
                         </NavDropdown>
 
                         {(isAdmin && (

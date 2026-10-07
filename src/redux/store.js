@@ -5,10 +5,12 @@ import fornecedorSlice from './redutores/fornecedorReducer.js';
 import categoriaGrupoSlice from './redutores/categoriagrupoReducer.js';
 import categoriaSubGrupoSlice from './redutores/categoriasubgrupoReducer.js';
 import compraSlice from './redutores/compraReducer.js';
+import vendaSlice from './redutores/vendaReducer.js';
 import locacaoSlice from './redutores/locacaoReducer.js';
 import usuarioSlice from './redutores/usuarioReducer.js';
 import cacambaSlice from './redutores/cacambaReducer.js';
 import tipocacambaSlice from './redutores/tipocacambaReducer.js';
+import financeiroSlice from './redutores/financeiroReducer.js';
 
 const store = configureStore({
     reducer:{
@@ -21,7 +23,9 @@ const store = configureStore({
         categoriagrupo: categoriaGrupoSlice,
         categoriasubgrupo: categoriaSubGrupoSlice,
         compra: compraSlice,
-        locacao: locacaoSlice
+        venda: vendaSlice,
+        locacao: locacaoSlice,
+        financeiro: financeiroSlice,
     }
 });
 
