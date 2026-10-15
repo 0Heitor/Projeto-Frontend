@@ -46,6 +46,36 @@ export const buscarFinanceiros = createAsyncThunk('financeiros/buscarFinanceiros
     }
 });
 
+export const atualizarFinanceiro = createAsyncThunk('financeiros/atualizar', async (financeiro) => {
+    const resposta = await fetch(urlBase, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(financeiro)
+    }).catch(erro => {
+        return {
+            status: false,
+            mensagem: 'Ocorreu um erro ao atualizar o financeiro:' + erro.message
+        }
+    });
+    if (resposta.ok) {
+        const dados = await resposta.json();
+        return {
+            status: dados.status,
+            mensagem: dados.mensagem,
+            financeiro
+        }
+    }
+    else{
+        return{
+            status: false,
+            mensagem: 'Ocorreu um erro ao atualizar o financeiro.',
+            financeiro
+        }
+    }
+});
+
 const initialState = {
     estado: ESTADO.OCIOSO,
     mensagem: "",
@@ -91,23 +121,23 @@ const financeiroSlice = createSlice({
         .addCase(adicionarFornecedor.rejected, (state, action) => {
             state.mensagem = "Erro ao adicionar o fornecedor: " + action.error.message;
             state.estado = ESTADO.ERRO;
-        })
-        .addCase(atualizarFornecedor.fulfilled, (state, action) => {
+        })*/
+        .addCase(atualizarFinanceiro.fulfilled, (state, action) => {
             state.estado = ESTADO.OCIOSO;
-            const indice = state.fornecedores.findIndex(fornecedor => fornecedor.id === action.payload.fornecedor.id);
-            state.fornecedores[indice] = action.payload.fornecedor;
+            const indice = state.financeiros.findIndex(financeiro => financeiro.id === action.payload.financeiro.id);
+            state.financeiros[indice] = action.payload.financeiro;
             state.mensagem = action.payload.mensagem;
             state.totalRegistros = action.payload.totalRegistros;
         })
-        .addCase(atualizarFornecedor.pending, (state, action) => {
+        .addCase(atualizarFinanceiro.pending, (state, action) => {
             state.estado = ESTADO.PENDENTE;
-            state.mensagem = "Atualizando fornecedor...";
+            state.mensagem = "Atualizando financeiro...";
         })
-        .addCase(atualizarFornecedor.rejected, (state, action) => {
-            state.mensagem = "Erro ao atualizar o fornecedor: " + action.error.message;
+        .addCase(atualizarFinanceiro.rejected, (state, action) => {
+            state.mensagem = "Erro ao atualizar o financeiro: " + action.error.message;
             state.estado = ESTADO.ERRO;
         })
-        .addCase(removerFornecedor.fulfilled, (state, action) => {
+        /*.addCase(removerFornecedor.fulfilled, (state, action) => {
             state.estado = ESTADO.OCIOSO;
             state.mensagem = action.payload.mensagem;
             state.fornecedores = state.fornecedores.filter(fornecedor => fornecedor.id !== action.payload.fornecedor.id);

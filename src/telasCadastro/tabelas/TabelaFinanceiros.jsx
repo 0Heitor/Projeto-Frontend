@@ -1,9 +1,10 @@
-import { Button, Container, Spinner, Table, Col, FloatingLabel, Form, Card, Row, Pagination, Badge } from "react-bootstrap";
+import { Button, Container, Spinner, Table, Col, FloatingLabel, Form, Card, Row, Pagination, Badge, Modal } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
-import { buscarFinanceiros } from "../../redux/redutores/financeiroReducer.js";
+import { buscarFinanceiros, atualizarFinanceiro } from "../../redux/redutores/financeiroReducer.js";
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { useAuth } from "../../contexto/AuthContext";
 
 export default function TabelaFinanceiros(props) {
     const { estado, mensagem, financeiros, totalRegistros } = useSelector(state => state.financeiro);
@@ -12,8 +13,49 @@ export default function TabelaFinanceiros(props) {
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
+    const { user } = useAuth();
+    const isAdmin = user?.nivel === "ADMIN";
+
+    // ESTADOS PARA O MODAL DE EDIÇÃO
+    const [exibirModalEdicao, setExibirModalEdicao] = useState(false);
+    const [itemEditando, setItemEditando] = useState(null);
+
     const manipulaMudanca = (evento) => {
         props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
+    };
+
+    // ABRIR E FECHAR MODAL DE EDIÇÃO
+    const abrirModalEdicao = (item) => {
+        setItemEditando({
+            ...item,
+            forma_pagamento: item.forma_pagamento || 'PIX',
+            status: item.status || 'PENDENTE',
+            ativo: item.ativo !== undefined ? String(item.ativo) : 'true'
+        });
+        setExibirModalEdicao(true);
+    };
+
+    const fecharModalEdicao = () => {
+        setExibirModalEdicao(false);
+        setItemEditando(null);
+    };
+
+    const manipulaMudancaEdicao = (evento) => {
+        const { name, value } = evento.target;
+        setItemEditando(prev => ({ ...prev, [name]: value }));
+    };
+
+    const salvarEdicao = () => {
+        if (!itemEditando) return;
+
+        // Monta o objeto formatado para atualizar via Redux
+        const dadosAtualizados = {
+            ...itemEditando,
+            data_pagamento: new Date().toISOString().split('T')[0] || null,
+            ativo: itemEditando.ativo === 'true' || itemEditando.ativo === true
+        };
+        dispatch(atualizarFinanceiro(dadosAtualizados));
+        fecharModalEdicao();
     };
 
     function buscarComFiltro() {
@@ -124,17 +166,27 @@ export default function TabelaFinanceiros(props) {
                 </div>
             </div>
 
-            {/* FILTROS ADAPTADOS (NOME CLIENTE, STATUS E ATIVO) */}
+            {/* FILTROS ADAPTADOS (NOME CLIENTE, STATUS, ATIVO E PERÍODO DE DATA) */}
             <Card className="mb-4 border-0 shadow-sm bg-light">
                 <Card.Body>
                     <h5 className="mb-3 text-secondary"><i className="bi bi-funnel"></i> Filtros de Busca</h5>
                     <Row className="g-2">
-                        <Col md={5}>
+                        <Col md={4}>
                             <FloatingLabel label="Nome do Cliente">
                                 <Form.Control name="nome" value={props.filtros.nome || ""} onChange={manipulaMudanca} placeholder="Cliente" />
                             </FloatingLabel>
                         </Col>
-                        <Col md={3}>
+                        <Col md={2}>
+                            <FloatingLabel label="Data Vencimento">
+                                <Form.Control 
+                                    type="date" 
+                                    name="data_vencimento" 
+                                    value={props.filtros.data_vencimento || ""} 
+                                    onChange={manipulaMudanca} 
+                                />
+                            </FloatingLabel>
+                        </Col>
+                        <Col md={2}>
                             <FloatingLabel label="Status">
                                 <Form.Select name="status" value={props.filtros.status || ""} onChange={manipulaMudanca}>
                                     <option value="">Todos</option>
@@ -148,8 +200,8 @@ export default function TabelaFinanceiros(props) {
                             <FloatingLabel label="Ativo">
                                 <Form.Select name="ativo" value={props.filtros.ativo || ""} onChange={manipulaMudanca}>
                                     <option value="">Todos</option>
-                                    <option value="true">Sim (Ativos)</option>
-                                    <option value="false">Não (Inativos)</option>
+                                    <option value="true">Sim</option>
+                                    <option value="false">Não</option>
                                 </Form.Select>
                             </FloatingLabel>
                         </Col>
@@ -174,7 +226,7 @@ export default function TabelaFinanceiros(props) {
                             <th className="text-center">Vencimento</th>
                             <th className="text-center">Data Pagto.</th>
                             <th className="text-center">Status</th>
-                            {props.modoSelecao && <th className="text-center">Ações</th>}
+                            <th className="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,8 +237,8 @@ export default function TabelaFinanceiros(props) {
                                         #{item.id}
                                     </td>
                                     <td>
-                                        <div className="fw-bold text-dark">{item.cliente.nome || `Cliente #${item.cliente.id}`}</div>
-                                        {item.cliente.cpf_cnpj && <small className="text-muted">{item.cliente.cpf_cnpj}</small>}
+                                        <div className="fw-bold text-dark">{item.cliente?.nome || `Cliente #${item.cliente?.id}`}</div>
+                                        {item.cliente?.cpf_cnpj && <small className="text-muted">{item.cliente.cpf_cnpj}</small>}
                                     </td>
                                     <td>
                                         <Badge bg="secondary" className="me-2">{item.origem_tipo}</Badge>
@@ -204,16 +256,17 @@ export default function TabelaFinanceiros(props) {
                                     <td className="text-center">
                                         {renderizarBadgeStatus(item.status)}
                                     </td>
-                                    {props.modoSelecao && (
-                                        <td className="text-center">
-                                            <Button 
-                                                variant="success" 
-                                                size="sm"
-                                                className="shadow-sm" 
-                                                onClick={() => props.onSelecionar(item)}
-                                            >
-                                                <i className="bi bi-check2-square me-1"></i> Selecionar
-                                            </Button>
+                                    {isAdmin && (    
+                                        <td className="text-center py-3">
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Button 
+                                                    variant="outline-warning" 
+                                                    className="d-flex align-items-center shadow-sm" 
+                                                    onClick={() => abrirModalEdicao(item)}
+                                                >
+                                                    <i className="bi bi-pencil-square me-1"></i> Editar
+                                                </Button>
+                                            </div>
                                         </td>
                                     )}
                                 </tr>
@@ -257,6 +310,79 @@ export default function TabelaFinanceiros(props) {
                     </div>
                 </div>
             </div>
+
+            {/* MODAL DE EDIÇÃO DE REGISTRO FINANCEIRO */}
+            <Modal show={exibirModalEdicao} onHide={fecharModalEdicao} centered backdrop="static">
+                <Modal.Header closeButton className="bg-primary text-white">
+                    <Modal.Title>
+                        <i className="bi bi-pencil-square me-2"></i>
+                        Editar Financeiro #{itemEditando?.id}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {itemEditando && (
+                        <Form>
+                            <div className="mb-3 p-3 bg-light rounded border">
+                                <div><strong>Cliente:</strong> {itemEditando.cliente?.nome || `Cliente #${itemEditando.cliente?.id}`}</div>
+                                <div><strong>Valor Total:</strong> {formatarMoeda(itemEditando.valor_total)}</div>
+                                <div><strong>Vencimento:</strong> {formatarData(itemEditando.data_vencimento)}</div>
+                            </div>
+
+                            <Row className="g-3">
+                                <Col md={12}>
+                                    <FloatingLabel label="Forma de Pagamento">
+                                        <Form.Select 
+                                            name="forma_pagamento" 
+                                            value={itemEditando.forma_pagamento || ''} 
+                                            onChange={manipulaMudancaEdicao}
+                                        >
+                                            <option value="PIX">PIX</option>
+                                            <option value="BOLETO">Boleto</option>
+                                            <option value="DINHEIRO">Dinheiro</option>
+                                            <option value="CARTAO">Cartão</option>
+                                        </Form.Select>
+                                    </FloatingLabel>
+                                </Col>
+
+                                <Col md={12}>
+                                    <FloatingLabel label="Status Financeiro">
+                                        <Form.Select 
+                                            name="status" 
+                                            value={itemEditando.status || 'PENDENTE'} 
+                                            onChange={manipulaMudancaEdicao}
+                                        >
+                                            <option value="PENDENTE">PENDENTE</option>
+                                            <option value="PAGO">PAGO</option>
+                                            <option value="ATRASADO">ATRASADO</option>
+                                        </Form.Select>
+                                    </FloatingLabel>
+                                </Col>
+
+                                <Col md={12}>
+                                    <FloatingLabel label="Registro Ativo">
+                                        <Form.Select 
+                                            name="ativo" 
+                                            value={String(itemEditando.ativo)} 
+                                            onChange={manipulaMudancaEdicao}
+                                        >
+                                            <option value="true">Sim (Ativo)</option>
+                                            <option value="false">Não (Inativo)</option>
+                                        </Form.Select>
+                                    </FloatingLabel>
+                                </Col>
+                            </Row>
+                        </Form>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={fecharModalEdicao}>
+                        <i className="bi bi-x-circle me-1"></i> Cancelar
+                    </Button>
+                    <Button variant="success" onClick={salvarEdicao}>
+                        <i className="bi bi-check-circle me-1"></i> Confirmar Alteração
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 }
