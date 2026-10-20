@@ -28,6 +28,8 @@ export default function TabelaFinanceiros(props) {
     const abrirModalEdicao = (item) => {
         setItemEditando({
             ...item,
+            descricao: item.descricao || '',
+            valor_recebido: item.valor_recebido || item.valor_total || '',
             forma_pagamento: item.forma_pagamento || 'PIX',
             status: item.status || 'PENDENTE',
             ativo: item.ativo !== undefined ? String(item.ativo) : 'true'
@@ -312,7 +314,7 @@ export default function TabelaFinanceiros(props) {
             </div>
 
             {/* MODAL DE EDIÇÃO DE REGISTRO FINANCEIRO */}
-            <Modal show={exibirModalEdicao} onHide={fecharModalEdicao} centered backdrop="static">
+            <Modal show={exibirModalEdicao} onHide={fecharModalEdicao} centered backdrop="static" size="lg">
                 <Modal.Header closeButton className="bg-primary text-white">
                     <Modal.Title>
                         <i className="bi bi-pencil-square me-2"></i>
@@ -320,59 +322,141 @@ export default function TabelaFinanceiros(props) {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {itemEditando && (
-                        <Form>
-                            <div className="mb-3 p-3 bg-light rounded border">
-                                <div><strong>Cliente:</strong> {itemEditando.cliente?.nome || `Cliente #${itemEditando.cliente?.id}`}</div>
-                                <div><strong>Valor Total:</strong> {formatarMoeda(itemEditando.valor_total)}</div>
-                                <div><strong>Vencimento:</strong> {formatarData(itemEditando.data_vencimento)}</div>
-                            </div>
+                    {itemEditando && (() => {
+                        // Cálculos dinâmicos de Troco / Saldo
+                        const valorTotal = Number(itemEditando.valor_total || 0);
+                        const valorRecebido = Number(itemEditando.valor_recebido || 0);
+                        const diferenca = valorRecebido - valorTotal;
 
-                            <Row className="g-3">
-                                <Col md={12}>
-                                    <FloatingLabel label="Forma de Pagamento">
-                                        <Form.Select 
-                                            name="forma_pagamento" 
-                                            value={itemEditando.forma_pagamento || ''} 
-                                            onChange={manipulaMudancaEdicao}
-                                        >
-                                            <option value="PIX">PIX</option>
-                                            <option value="BOLETO">Boleto</option>
-                                            <option value="DINHEIRO">Dinheiro</option>
-                                            <option value="CARTAO">Cartão</option>
-                                        </Form.Select>
-                                    </FloatingLabel>
-                                </Col>
+                        // Definição da cor e mensagem do status de troco/saldo
+                        let badgeBg = "secondary";
+                        let mensagemTroco = "Informe o valor recebido";
+                        let iconeTroco = "bi-cash-stack";
 
-                                <Col md={12}>
-                                    <FloatingLabel label="Status Financeiro">
-                                        <Form.Select 
-                                            name="status" 
-                                            value={itemEditando.status || 'PENDENTE'} 
-                                            onChange={manipulaMudancaEdicao}
-                                        >
-                                            <option value="PENDENTE">PENDENTE</option>
-                                            <option value="PAGO">PAGO</option>
-                                            <option value="ATRASADO">ATRASADO</option>
-                                        </Form.Select>
-                                    </FloatingLabel>
-                                </Col>
+                        if (itemEditando.valor_recebido !== undefined && itemEditando.valor_recebido !== "") {
+                            if (Math.abs(diferenca) < 0.01) {
+                                badgeBg = "success";
+                                mensagemTroco = "Valor exato! Sem troco.";
+                                iconeTroco = "bi-check-circle-fill";
+                            } else if (diferenca > 0) {
+                                badgeBg = "info";
+                                mensagemTroco = `Troco a devolver: ${formatarMoeda(diferenca)}`;
+                                iconeTroco = "bi-arrow-left-right";
+                            } else {
+                                badgeBg = "danger";
+                                mensagemTroco = `Valor insuficiente! Faltando: ${formatarMoeda(Math.abs(diferenca))}`;
+                                iconeTroco = "bi-exclamation-triangle-fill";
+                            }
+                        }
 
-                                <Col md={12}>
-                                    <FloatingLabel label="Registro Ativo">
-                                        <Form.Select 
-                                            name="ativo" 
-                                            value={String(itemEditando.ativo)} 
-                                            onChange={manipulaMudancaEdicao}
-                                        >
-                                            <option value="true">Sim (Ativo)</option>
-                                            <option value="false">Não (Inativo)</option>
-                                        </Form.Select>
-                                    </FloatingLabel>
-                                </Col>
-                            </Row>
-                        </Form>
-                    )}
+                        return (
+                            <Form>
+                                {/* INFORMAÇÕES BÁSICAS DO REGISTRO */}
+                                <div className="mb-3 p-3 bg-light rounded border">
+                                    <Row>
+                                        <Col md={6}>
+                                            <div><strong>Cliente:</strong> {itemEditando.cliente?.nome || `Cliente #${itemEditando.cliente?.id}`}</div>
+                                            <div><strong>Vencimento:</strong> {formatarData(itemEditando.data_vencimento)}</div>
+                                        </Col>
+                                        <Col md={6} className="text-md-end">
+                                            <div><strong>Valor Total da Conta:</strong></div>
+                                            <div className="fs-4 fw-bold text-primary">{formatarMoeda(valorTotal)}</div>
+                                        </Col>
+                                    </Row>
+                                </div>
+
+                                <Row className="g-3">
+                                    {/* CAMPO DE DESCRIÇÃO (TEXTAREA) */}
+                                    <Col md={12}>
+                                        <FloatingLabel label="Descrição / Observações">
+                                            <Form.Control 
+                                                as="textarea"
+                                                rows={2}
+                                                style={{ height: '80px' }}
+                                                name="descricao" 
+                                                placeholder="Descrição"
+                                                value={itemEditando.descricao || ''} 
+                                                onChange={manipulaMudancaEdicao}
+                                            />
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* VALOR RECEBIDO E CÁLCULO DE TROCO */}
+                                    <Col md={6}>
+                                        <FloatingLabel label="Valor Recebido (R$)">
+                                            <Form.Control 
+                                                type="number"
+                                                step="0.01"
+                                                name="valor_recebido" 
+                                                placeholder="0,00"
+                                                value={itemEditando.valor_recebido ?? ''} 
+                                                onChange={manipulaMudancaEdicao}
+                                            />
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* DISPLAY DINÂMICO DE TROCO OU PENDÊNCIA */}
+                                    <Col md={6} className="d-flex align-items-center">
+                                        <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
+                                            <Card.Body className="py-2 px-3">
+                                                <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
+                                                    <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
+                                                </small>
+                                                <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
+                                                    {mensagemTroco}
+                                                </div>
+                                            </Card.Body>
+                                        </Card>
+                                    </Col>
+
+                                    {/* FORMA DE PAGAMENTO */}
+                                    <Col md={4}>
+                                        <FloatingLabel label="Forma de Pagamento">
+                                            <Form.Select 
+                                                name="forma_pagamento" 
+                                                value={itemEditando.forma_pagamento || ''} 
+                                                onChange={manipulaMudancaEdicao}
+                                            >
+                                                <option value="PIX">PIX</option>
+                                                <option value="BOLETO">Boleto</option>
+                                                <option value="DINHEIRO">Dinheiro</option>
+                                                <option value="CARTAO">Cartão</option>
+                                            </Form.Select>
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* STATUS FINANCEIRO */}
+                                    <Col md={4}>
+                                        <FloatingLabel label="Status Financeiro">
+                                            <Form.Select 
+                                                name="status" 
+                                                value={itemEditando.status || 'PENDENTE'} 
+                                                onChange={manipulaMudancaEdicao}
+                                            >
+                                                <option value="PENDENTE">PENDENTE</option>
+                                                <option value="PAGO">PAGO</option>
+                                                <option value="ATRASADO">ATRASADO</option>
+                                            </Form.Select>
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* REGISTRO ATIVO */}
+                                    <Col md={4}>
+                                        <FloatingLabel label="Registro Ativo">
+                                            <Form.Select 
+                                                name="ativo" 
+                                                value={String(itemEditando.ativo)} 
+                                                onChange={manipulaMudancaEdicao}
+                                            >
+                                                <option value="true">Sim (Ativo)</option>
+                                                <option value="false">Não (Inativo)</option>
+                                            </Form.Select>
+                                        </FloatingLabel>
+                                    </Col>
+                                </Row>
+                            </Form>
+                        );
+                    })()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="danger" onClick={fecharModalEdicao}>
