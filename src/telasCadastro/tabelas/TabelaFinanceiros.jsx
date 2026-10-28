@@ -381,34 +381,6 @@ export default function TabelaFinanceiros(props) {
                                         </FloatingLabel>
                                     </Col>
 
-                                    {/* VALOR RECEBIDO E CÁLCULO DE TROCO */}
-                                    <Col md={6}>
-                                        <FloatingLabel label="Valor Recebido (R$)">
-                                            <Form.Control 
-                                                type="number"
-                                                step="0.01"
-                                                name="valor_recebido" 
-                                                placeholder="0,00"
-                                                value={itemEditando.valor_recebido ?? ''} 
-                                                onChange={manipulaMudancaEdicao}
-                                            />
-                                        </FloatingLabel>
-                                    </Col>
-
-                                    {/* DISPLAY DINÂMICO DE TROCO OU PENDÊNCIA */}
-                                    <Col md={6} className="d-flex align-items-center">
-                                        <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
-                                            <Card.Body className="py-2 px-3">
-                                                <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
-                                                    <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
-                                                </small>
-                                                <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
-                                                    {mensagemTroco}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-
                                     {/* FORMA DE PAGAMENTO */}
                                     <Col md={4}>
                                         <FloatingLabel label="Forma de Pagamento">
@@ -453,6 +425,38 @@ export default function TabelaFinanceiros(props) {
                                             </Form.Select>
                                         </FloatingLabel>
                                     </Col>
+
+                                    <Col md={6}>
+                                        <FloatingLabel label="Valor Recebido (R$)">
+                                            <Form.Control 
+                                                type="number"
+                                                step="0.01"
+                                                name="valor_recebido" 
+                                                placeholder="0,00"
+                                                value={itemEditando.valor_recebido ?? ''} 
+                                                onChange={manipulaMudancaEdicao}
+                                            />
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* SEÇÃO DE TROCO: EXIBIDA APENAS SE A FORMA DE PAGAMENTO FOR "DINHEIRO" */}
+                                    {itemEditando.forma_pagamento === 'DINHEIRO' && (
+                                        <>
+
+                                            <Col md={6} className="d-flex align-items-center">
+                                                <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
+                                                    <Card.Body className="py-2 px-3">
+                                                        <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
+                                                            <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
+                                                        </small>
+                                                        <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
+                                                            {mensagemTroco}
+                                                        </div>
+                                                    </Card.Body>
+                                                </Card>
+                                            </Col>
+                                        </>
+                                    )}
                                 </Row>
                             </Form>
                         );

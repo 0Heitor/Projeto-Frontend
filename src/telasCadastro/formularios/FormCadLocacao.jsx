@@ -95,7 +95,7 @@ export default function FormCadLocacao(props) {
             cacamba: cacamba,
             quantidade: 1, 
             valor_unitario: 1,
-            status: 'AGENDADA', 
+            status: 'AGENDADA', // Variável fixa enviada para o backend
             ativo: true
         };
 
@@ -119,12 +119,6 @@ export default function FormCadLocacao(props) {
 
     // ABRIR E GERENCIAR O MODAL DE EDIÇÃO FINANCEIRA
     const abrirModalEdicao = () => {
-        if (locacao.cliente.id === '0' || locacao.itens.length === 0) {
-            toast.error("Selecione um cliente e pelo menos uma caçamba!");
-            setFormValidado(true);
-            return;
-        }
-
         setItemEditando({
             id: locacao.id || 'NOVA',
             cliente: locacao.cliente,
@@ -173,9 +167,28 @@ export default function FormCadLocacao(props) {
         props.exibirFormulario(false);
     };
 
+    // VALIDAÇÃO AO CLICAR EM SALVAR/ALTERAR
     async function manipularSubmissao(e) {
         e.preventDefault();
-        abrirModalEdicao();
+
+        if (locacao.cliente.id === '0' || locacao.itens.length === 0) {
+            toast.error("Selecione um cliente e pelo menos uma caçamba!");
+            setFormValidado(true);
+            return;
+        }
+
+        // VERIFICA SE O STATUS DA LOCAÇÃO É "CONCLUIDA" PARA ABRIR A MODAL DE PAGAMENTO
+        if (locacao.status === 'CONCLUIDA') {
+            abrirModalEdicao();
+        } else {
+            // Caso não esteja concluída, salva direto sem abrir a modal financeira
+            if (!props.modoEdicao) {
+                dispatch(adicionarLocacao(locacao));
+            } else {
+                dispatch(atualizarLocacao(locacao));
+            }
+            props.exibirFormulario(false);
+        }
     }
 
     // CÁLCULO DE SEMANAS E VALOR TOTAL
@@ -313,7 +326,6 @@ export default function FormCadLocacao(props) {
                                         <th>Volume/Tipo</th>
                                         <th style={{ width: '150px' }}>Preço/Semana</th>
                                         <th style={{ width: '150px' }}>Multiplicador</th>
-                                        <th style={{ width: '200px' }}>Status do Item</th>
                                         <th>Subtotal ({qtdSemanas} {qtdSemanas === 1 ? 'semana' : 'semanas'})</th>
                                         <th style={{ width: '80px' }}>Ações</th>
                                     </tr>
@@ -341,18 +353,6 @@ export default function FormCadLocacao(props) {
                                                             required
                                                         />
                                                     </td>
-                                                    <td>
-                                                        <Form.Select
-                                                            value={item.status || 'AGENDADA'}
-                                                            onChange={(e) => atualizarDadosItem(index, 'status', e.target.value)}
-                                                            required
-                                                        >
-                                                            <option value="AGENDADA">Agendada</option>
-                                                            <option value="ENTREGUE">Entregue no Local</option>
-                                                            <option value="DISPONIVEL">Recolhida / Concluída</option>
-                                                            <option value="MANUTENCAO">Enviada para Manutenção</option>
-                                                        </Form.Select>
-                                                    </td>
                                                     <td className="align-middle fw-semibold text-success">
                                                         R$ {subtotal.toFixed(2)}
                                                     </td>
@@ -366,7 +366,7 @@ export default function FormCadLocacao(props) {
                                         })
                                     ) : (
                                         <tr>
-                                            <td colSpan="7" className="text-center text-muted py-3">
+                                            <td colSpan="6" className="text-center text-muted py-3">
                                                 Nenhuma caçamba vinculada. Clique em "Vincular Caçamba" para listar as disponíveis.
                                             </td>
                                         </tr>
@@ -413,11 +413,10 @@ export default function FormCadLocacao(props) {
                             <i className="bi bi-arrow-counterclockwise me-1"></i> Resetar
                         </Button>
                         <Button
-                            type="button"
+                            type="submit"
                             variant="primary"
                             className="px-4 shadow-sm"
                             disabled={estado === ESTADO.PENDENTE}
-                            onClick={abrirModalEdicao}
                         >
                             {estado === ESTADO.PENDENTE ? (
                                 <Spinner size="sm" />
@@ -437,7 +436,7 @@ export default function FormCadLocacao(props) {
                 <Modal.Header closeButton className="bg-primary text-white">
                     <Modal.Title>
                         <i className="bi bi-pencil-square me-2"></i>
-                        Adicionar Financeiro #{itemEditando?.id}
+                        Efetuar Pagamento / Financeiro #{itemEditando?.id}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -488,38 +487,12 @@ export default function FormCadLocacao(props) {
                                                 as="textarea"
                                                 rows={2}
                                                 style={{ height: '80px' }}
-                                                name="rec_descricao" 
+                                                name="descricao" 
                                                 placeholder="Descrição"
                                                 value={itemEditando.descricao || ''} 
                                                 onChange={manipulaMudancaEdicao}
                                             />
                                         </FloatingLabel>
-                                    </Col>
-
-                                    <Col md={6}>
-                                        <FloatingLabel label="Valor Recebido (R$)">
-                                            <Form.Control 
-                                                type="number"
-                                                step="0.01"
-                                                name="valor_recebido" 
-                                                placeholder="0,00"
-                                                value={itemEditando.valor_recebido ?? ''} 
-                                                onChange={manipulaMudancaEdicao}
-                                            />
-                                        </FloatingLabel>
-                                    </Col>
-
-                                    <Col md={6} className="d-flex align-items-center">
-                                        <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
-                                            <Card.Body className="py-2 px-3">
-                                                <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
-                                                    <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
-                                                </small>
-                                                <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
-                                                    {mensagemTroco}
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
                                     </Col>
 
                                     <Col md={4}>
@@ -540,7 +513,7 @@ export default function FormCadLocacao(props) {
                                     <Col md={4}>
                                         <FloatingLabel label="Status Financeiro">
                                             <Form.Select 
-                                                name="status" 
+                                                name="status_conta" 
                                                 value={itemEditando.status_conta || 'PENDENTE'} 
                                                 onChange={manipulaMudancaEdicao}
                                             >
@@ -554,7 +527,7 @@ export default function FormCadLocacao(props) {
                                     <Col md={4}>
                                         <FloatingLabel label="Registro Ativo">
                                             <Form.Select 
-                                                name="ativo" 
+                                                name="ativo_conta" 
                                                 value={String(itemEditando.ativo_conta)} 
                                                 onChange={manipulaMudancaEdicao}
                                             >
@@ -563,6 +536,37 @@ export default function FormCadLocacao(props) {
                                             </Form.Select>
                                         </FloatingLabel>
                                     </Col>
+
+                                    <Col md={6}>
+                                        <FloatingLabel label="Valor Recebido (R$)">
+                                            <Form.Control 
+                                                type="number"
+                                                step="0.01"
+                                                name="valor_recebido" 
+                                                placeholder="0,00"
+                                                value={itemEditando.valor_recebido ?? ''} 
+                                                onChange={manipulaMudancaEdicao}
+                                            />
+                                        </FloatingLabel>
+                                    </Col>
+
+                                    {/* SEÇÃO DE TROCO: EXIBIDA APENAS SE A FORMA DE PAGAMENTO FOR "DINHEIRO" */}
+                                    {itemEditando.forma_pagamento === 'DINHEIRO' && (
+                                        <>
+                                            <Col md={6} className="d-flex align-items-center">
+                                                <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
+                                                    <Card.Body className="py-2 px-3">
+                                                        <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
+                                                            <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
+                                                        </small>
+                                                        <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
+                                                            {mensagemTroco}
+                                                        </div>
+                                                    </Card.Body>
+                                                </Card>
+                                            </Col>
+                                        </>
+                                    )}
                                 </Row>
                             </Form>
                         );
@@ -573,7 +577,7 @@ export default function FormCadLocacao(props) {
                         <i className="bi bi-x-circle me-1"></i> Cancelar
                     </Button>
                     <Button variant="success" onClick={salvarEdicao}>
-                        <i className="bi bi-check-circle me-1"></i> Confirmar
+                        <i className="bi bi-check-circle me-1"></i> Confirmar Pagamento
                     </Button>
                 </Modal.Footer>
             </Modal>
