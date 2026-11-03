@@ -14,7 +14,8 @@ export default function TabelaLocacoes(props) {
     const [mostrarItens, setMostrarItens] = useState(false);
     const [itensVisualizar, setItensVisualizar] = useState([]);
 
-    const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
+    const totalValido = totalRegistros > 0 ? totalRegistros : (locacoes?.length || 1);
+    const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
@@ -393,8 +394,8 @@ export default function TabelaLocacoes(props) {
                                 <tr key={index}>
                                     <td className="fw-bold text-secondary">Caçamba #{item.cacamba?.id || item.itc_cac_id}</td>
                                     <td>
-                                        <Badge bg={item.status === 'RETIRADA' || item.status === 'CONCLUIDA' ? 'success' : 'secondary'}>
-                                            {item.status || 'AGENDADA'}
+                                        <Badge bg={item.status_item === 'RETIRADA' || item.status_item === 'CONCLUIDA' ? 'success' : 'secondary'}>
+                                            {item.status_item || 'AGENDADA'}
                                         </Badge>
                                     </td>
                                     <td>

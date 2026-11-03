@@ -9,7 +9,9 @@ import { useAuth } from "../../contexto/AuthContext";
 export default function TabelaFinanceiros(props) {
     const { estado, mensagem, financeiros, totalRegistros } = useSelector(state => state.financeiro);
 
-    const totalDePaginas = Math.ceil((totalRegistros || 0) / props.itensPorPagina);
+    const totalValido = totalRegistros > 0 ? totalRegistros : (financeiros?.length || 1);
+    const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
+
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
@@ -49,14 +51,20 @@ export default function TabelaFinanceiros(props) {
 
     const salvarEdicao = () => {
         if (!itemEditando) return;
-
-        // Monta o objeto formatado para atualizar via Redux
         const dadosAtualizados = {
             ...itemEditando,
             data_pagamento: new Date().toISOString().split('T')[0] || null,
             ativo: itemEditando.ativo === 'true' || itemEditando.ativo === true
         };
-        dispatch(atualizarFinanceiro(dadosAtualizados));
+
+        dispatch(atualizarFinanceiro(dadosAtualizados)).then(() => {
+            dispatch(buscarFinanceiros({
+                ...props.filtros,
+                limit: props.itensPorPagina,
+                offset: props.itensPorPagina * (props.paginaAtual - 1)
+            }));
+        });
+
         fecharModalEdicao();
     };
 
@@ -173,9 +181,18 @@ export default function TabelaFinanceiros(props) {
                 <Card.Body>
                     <h5 className="mb-3 text-secondary"><i className="bi bi-funnel"></i> Filtros de Busca</h5>
                     <Row className="g-2">
-                        <Col md={4}>
+                        <Col md={3}>
                             <FloatingLabel label="Nome do Cliente">
                                 <Form.Control name="nome" value={props.filtros.nome || ""} onChange={manipulaMudanca} placeholder="Cliente" />
+                            </FloatingLabel>
+                        </Col>
+                        <Col md={2}>
+                            <FloatingLabel label="Origem Tipo">
+                                <Form.Select name="origem_tipo" value={props.filtros.origem_tipo || ""} onChange={manipulaMudanca}>
+                                    <option value="">Todos</option>
+                                    <option value="LOCAÇÃO">Locação</option>
+                                    <option value="VENDA">Venda</option>
+                                </Form.Select>
                             </FloatingLabel>
                         </Col>
                         <Col md={2}>
@@ -207,7 +224,7 @@ export default function TabelaFinanceiros(props) {
                                 </Form.Select>
                             </FloatingLabel>
                         </Col>
-                        <Col md={2} className="d-flex align-items-center">
+                        <Col md={1} className="d-flex align-items-center">
                             <Button variant="primary" className="w-100 py-3" onClick={buscarComFiltro}>
                                 <i className="bi bi-search"></i> Buscar
                             </Button>
@@ -323,12 +340,10 @@ export default function TabelaFinanceiros(props) {
                 </Modal.Header>
                 <Modal.Body>
                     {itemEditando && (() => {
-                        // Cálculos dinâmicos de Troco / Saldo
                         const valorTotal = Number(itemEditando.valor_total || 0);
                         const valorRecebido = Number(itemEditando.valor_recebido || 0);
                         const diferenca = valorRecebido - valorTotal;
 
-                        // Definição da cor e mensagem do status de troco/saldo
                         let badgeBg = "secondary";
                         let mensagemTroco = "Informe o valor recebido";
                         let iconeTroco = "bi-cash-stack";
@@ -351,7 +366,6 @@ export default function TabelaFinanceiros(props) {
 
                         return (
                             <Form>
-                                {/* INFORMAÇÕES BÁSICAS DO REGISTRO */}
                                 <div className="mb-3 p-3 bg-light rounded border">
                                     <Row>
                                         <Col md={6}>
@@ -366,7 +380,6 @@ export default function TabelaFinanceiros(props) {
                                 </div>
 
                                 <Row className="g-3">
-                                    {/* CAMPO DE DESCRIÇÃO (TEXTAREA) */}
                                     <Col md={12}>
                                         <FloatingLabel label="Descrição / Observações">
                                             <Form.Control 
@@ -381,7 +394,6 @@ export default function TabelaFinanceiros(props) {
                                         </FloatingLabel>
                                     </Col>
 
-                                    {/* FORMA DE PAGAMENTO */}
                                     <Col md={4}>
                                         <FloatingLabel label="Forma de Pagamento">
                                             <Form.Select 
@@ -397,7 +409,6 @@ export default function TabelaFinanceiros(props) {
                                         </FloatingLabel>
                                     </Col>
 
-                                    {/* STATUS FINANCEIRO */}
                                     <Col md={4}>
                                         <FloatingLabel label="Status Financeiro">
                                             <Form.Select 
@@ -412,7 +423,6 @@ export default function TabelaFinanceiros(props) {
                                         </FloatingLabel>
                                     </Col>
 
-                                    {/* REGISTRO ATIVO */}
                                     <Col md={4}>
                                         <FloatingLabel label="Registro Ativo">
                                             <Form.Select 
@@ -439,23 +449,19 @@ export default function TabelaFinanceiros(props) {
                                         </FloatingLabel>
                                     </Col>
 
-                                    {/* SEÇÃO DE TROCO: EXIBIDA APENAS SE A FORMA DE PAGAMENTO FOR "DINHEIRO" */}
                                     {itemEditando.forma_pagamento === 'DINHEIRO' && (
-                                        <>
-
-                                            <Col md={6} className="d-flex align-items-center">
-                                                <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
-                                                    <Card.Body className="py-2 px-3">
-                                                        <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
-                                                            <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
-                                                        </small>
-                                                        <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
-                                                            {mensagemTroco}
-                                                        </div>
-                                                    </Card.Body>
-                                                </Card>
-                                            </Col>
-                                        </>
+                                        <Col md={6} className="d-flex align-items-center">
+                                            <Card className={`w-100 border-0 bg-${badgeBg} bg-opacity-10 border-start border-4 border-${badgeBg}`}>
+                                                <Card.Body className="py-2 px-3">
+                                                    <small className={`text-${badgeBg === 'info' ? 'dark' : badgeBg} fw-bold d-block`}>
+                                                        <i className={`bi ${iconeTroco} me-1`}></i> Situação do Pagamento:
+                                                    </small>
+                                                    <div className={`fs-6 fw-bold text-${badgeBg === 'info' ? 'dark' : badgeBg}`}>
+                                                        {mensagemTroco}
+                                                    </div>
+                                                </Card.Body>
+                                            </Card>
+                                        </Col>
                                     )}
                                 </Row>
                             </Form>
