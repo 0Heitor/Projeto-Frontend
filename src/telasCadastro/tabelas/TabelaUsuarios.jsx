@@ -141,7 +141,7 @@ export default function TabelaUsuarios(props){
                         autoClose: 2500,
                         theme: "light"
                     });
-                }, 150);
+                }, 650);
 
                 sucessoExibido.current = true;
             }
