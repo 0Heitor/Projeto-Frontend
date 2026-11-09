@@ -101,17 +101,19 @@ export default function TabelaUsuarios(props){
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            // Exibe o toast de processamento
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { toastId: "processando", autoClose: false, theme: "colored" }
-            );
+            
+            // Garante que não duplica se já estiver ativo
+            if (!toast.isActive("processando")) {
+                toast.info(
+                    <div className="d-flex align-items-center">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        <span>Sincronizando dados com o servidor...</span>
+                    </div>, 
+                    { toastId: "processando", autoClose: false, theme: "colored", closeButton: false }
+                );
+            }
         } 
         else if (estado === ESTADO.ERRO) {
-            // Remove o de processamento antes de mostrar o erro
             toast.dismiss("processando");
             toast.error(`Ops! ${mensagem}`, { 
                 toastId: "erro", 
@@ -121,20 +123,19 @@ export default function TabelaUsuarios(props){
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            // SEMPRE remove o de processamento ao ficar ocioso
             toast.dismiss("processando");
 
-            // Só mostra o sucesso se ele ainda não foi exibido para este ciclo
-            if (!sucessoExibido.current) {
+            // Só dispara o toast de sucesso se passou por um ciclo pendente anterior
+            if (!sucessoExibido.current && usuarios !== undefined) {
                 toast.success("Usuários carregados com sucesso!", {
-                    toastId: "sucesso-carga", // Adicionado ID fixo para evitar duplicatas
-                    autoClose: 3000,
+                    toastId: "sucesso-carga",
+                    autoClose: 2500,
                     theme: "light"
                 });
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem]);
+    }, [estado, mensagem, usuarios]);
 
     let itensPaginacao = [];
     for(let numero = 1; numero <= totalDePaginas; numero++){
