@@ -99,67 +99,68 @@ export default function TabelaUsuarios(props){
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
     useEffect(() => {
-        if (estado === ESTADO.PENDENTE) {
-            sucessoExibido.current = false;
-            
-            // Se já existe um toast ativo, atualizamos ele para o estado de carregamento. 
-            // Se não existe, criamos um novo com ID fixo "toast-status".
-            if (toast.isActive("toast-status")) {
-                toast.update("toast-status", {
-                    render: (
-                        <div className="d-flex align-items-center">
-                            <Spinner animation="border" size="sm" className="me-2" />
-                            <span>Sincronizando dados com o servidor...</span>
-                        </div>
-                    ),
-                    type: toast.TYPE.INFO,
-                    autoClose: false,
-                    closeButton: false,
-                    theme: "colored"
-                });
-            } else {
-                toast.info(
+    if (estado === ESTADO.PENDENTE) {
+        sucessoExibido.current = false;
+        
+        // Se já existe um toast ativo, atualizamos ele para o estado de carregamento. 
+        // Se não existe, criamos um novo com ID fixo "toast-status".
+        if (toast.isActive("toast-status")) {
+            toast.update("toast-status", {
+                render: (
                     <div className="d-flex align-items-center">
                         <Spinner animation="border" size="sm" className="me-2" />
                         <span>Sincronizando dados com o servidor...</span>
-                    </div>, 
-                    { 
-                        toastId: "toast-status", 
-                        autoClose: false, 
-                        theme: "colored", 
-                        closeButton: false 
-                    }
-                );
-            }
-        } 
-        else if (estado === ESTADO.ERRO) {
-            toast.update("toast-status", {
-                render: `Ops! ${mensagem}`,
-                type: toast.TYPE.ERROR,
-                autoClose: 5000,
-                closeButton: true,
-                theme: "dark"
+                    </div>
+                ),
+                type: "info",
+                autoClose: false,
+                closeButton: false,
+                theme: "colored"
             });
-        } 
-        else if (estado === ESTADO.OCIOSO) {
-            // Só exibe o sucesso se o componente realmente passou por um carregamento pendente antes
-            if (!sucessoExibido.current && usuarios !== undefined) {
-                toast.update("toast-status", {
-                    render: "Usuários carregados com sucesso!",
-                    type: toast.TYPE.SUCCESS,
-                    autoClose: 2500,
-                    closeButton: true,
-                    theme: "light"
-                });
-                sucessoExibido.current = true;
-            } else {
-                // Se virou ocioso sem passar por pendente visível, apenas removemos o toast pendente se houver
-                if (toast.isActive("toast-status")) {
-                    toast.dismiss("toast-status");
+        } else {
+            toast.info(
+                <div className="d-flex align-items-center">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
+                { 
+                    toastId: "toast-status", 
+                    autoClose: false, 
+                    theme: "colored", 
+                    closeButton: false 
                 }
+            );
+        }
+    } 
+    else if (estado === ESTADO.ERRO) {
+        // Atualiza o toast existente para erro, evitando duplicidade
+        toast.update("toast-status", {
+            render: `Ops! ${mensagem}`,
+            type: "error",
+            autoClose: 5000,
+            closeButton: true,
+            theme: "dark"
+        });
+    } 
+    else if (estado === ESTADO.OCIOSO) {
+        // Só exibe o sucesso se o componente realmente passou por um carregamento pendente antes
+        if (!sucessoExibido.current && usuarios !== undefined) {
+            toast.update("toast-status", {
+                render: "Usuários carregados com sucesso!",
+                type: "success",
+                autoClose: 2500,
+                closeButton: true,
+                theme: "light"
+            });
+            sucessoExibido.current = true;
+        } else {
+            // Se virou ocioso sem passar por pendente visível, apenas removemos o toast pendente se houver
+            if (toast.isActive("toast-status")) {
+                toast.dismiss("toast-status");
             }
         }
-    }, [estado, mensagem, usuarios]);
+    }
+}, [estado, mensagem, usuarios]);
 
     let itensPaginacao = [];
     for(let numero = 1; numero <= totalDePaginas; numero++){
