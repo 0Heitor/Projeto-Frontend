@@ -99,68 +99,54 @@ export default function TabelaUsuarios(props){
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
     useEffect(() => {
-    if (estado === ESTADO.PENDENTE) {
-        sucessoExibido.current = false;
-        
-        // Se já existe um toast ativo, atualizamos ele para o estado de carregamento. 
-        // Se não existe, criamos um novo com ID fixo "toast-status".
-        if (toast.isActive("toast-status")) {
-            toast.update("toast-status", {
-                render: (
+        if (estado === ESTADO.PENDENTE) {
+            sucessoExibido.current = false;
+            
+            // Dispara o toast de carregamento se já não estiver ativo
+            if (!toast.isActive("processando")) {
+                toast.info(
                     <div className="d-flex align-items-center">
                         <Spinner animation="border" size="sm" className="me-2" />
                         <span>Sincronizando dados com o servidor...</span>
-                    </div>
-                ),
-                type: "info",
-                autoClose: false,
-                closeButton: false,
-                theme: "colored"
+                    </div>, 
+                    { 
+                        toastId: "processando", 
+                        autoClose: false, 
+                        theme: "colored", 
+                        closeButton: false 
+                    }
+                );
+            }
+        } 
+        else if (estado === ESTADO.ERRO) {
+            // Remove o de carregamento e exibe o erro
+            toast.dismiss("processando");
+            toast.error(`Ops! ${mensagem}`, { 
+                toastId: "erro", 
+                theme: "dark",
+                autoClose: 5000,
+                pauseOnHover: true
             });
-        } else {
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { 
-                    toastId: "toast-status", 
-                    autoClose: false, 
-                    theme: "colored", 
-                    closeButton: false 
-                }
-            );
-        }
-    } 
-    else if (estado === ESTADO.ERRO) {
-        // Atualiza o toast existente para erro, evitando duplicidade
-        toast.update("toast-status", {
-            render: `Ops! ${mensagem}`,
-            type: "error",
-            autoClose: 5000,
-            closeButton: true,
-            theme: "dark"
-        });
-    } 
-    else if (estado === ESTADO.OCIOSO) {
-        // Só exibe o sucesso se o componente realmente passou por um carregamento pendente antes
-        if (!sucessoExibido.current && usuarios !== undefined) {
-            toast.update("toast-status", {
-                render: "Usuários carregados com sucesso!",
-                type: "success",
-                autoClose: 2500,
-                closeButton: true,
-                theme: "light"
-            });
-            sucessoExibido.current = true;
-        } else {
-            // Se virou ocioso sem passar por pendente visível, apenas removemos o toast pendente se houver
-            if (toast.isActive("toast-status")) {
-                toast.dismiss("toast-status");
+        } 
+        else if (estado === ESTADO.OCIOSO) {
+            // Só exibe se passou por um ciclo pendente anterior
+            if (!sucessoExibido.current && usuarios !== undefined) {
+                // 1. Fecha o toast de carregamento atual
+                toast.dismiss("processando");
+
+                // 2. Pequeno atraso para o novo toast nascer logo abaixo perfeitamente
+                setTimeout(() => {
+                    toast.success("Usuários carregados com sucesso!", {
+                        toastId: "sucesso-carga",
+                        autoClose: 2500,
+                        theme: "light"
+                    });
+                }, 150);
+
+                sucessoExibido.current = true;
             }
         }
-    }
-}, [estado, mensagem, usuarios]);
+    }, [estado, mensagem, usuarios]);
 
     let itensPaginacao = [];
     for(let numero = 1; numero <= totalDePaginas; numero++){
