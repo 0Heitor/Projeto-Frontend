@@ -102,37 +102,61 @@ export default function TabelaUsuarios(props){
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
             
-            // Garante que não duplica se já estiver ativo
-            if (!toast.isActive("processando")) {
+            // Se já existe um toast ativo, atualizamos ele para o estado de carregamento. 
+            // Se não existe, criamos um novo com ID fixo "toast-status".
+            if (toast.isActive("toast-status")) {
+                toast.update("toast-status", {
+                    render: (
+                        <div className="d-flex align-items-center">
+                            <Spinner animation="border" size="sm" className="me-2" />
+                            <span>Sincronizando dados com o servidor...</span>
+                        </div>
+                    ),
+                    type: toast.TYPE.INFO,
+                    autoClose: false,
+                    closeButton: false,
+                    theme: "colored"
+                });
+            } else {
                 toast.info(
                     <div className="d-flex align-items-center">
                         <Spinner animation="border" size="sm" className="me-2" />
                         <span>Sincronizando dados com o servidor...</span>
                     </div>, 
-                    { toastId: "processando", autoClose: false, theme: "colored", closeButton: false }
+                    { 
+                        toastId: "toast-status", 
+                        autoClose: false, 
+                        theme: "colored", 
+                        closeButton: false 
+                    }
                 );
             }
         } 
         else if (estado === ESTADO.ERRO) {
-            toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { 
-                toastId: "erro", 
-                theme: "dark",
+            toast.update("toast-status", {
+                render: `Ops! ${mensagem}`,
+                type: toast.TYPE.ERROR,
                 autoClose: 5000,
-                pauseOnHover: true
+                closeButton: true,
+                theme: "dark"
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            toast.dismiss("processando");
-
-            // Só dispara o toast de sucesso se passou por um ciclo pendente anterior
+            // Só exibe o sucesso se o componente realmente passou por um carregamento pendente antes
             if (!sucessoExibido.current && usuarios !== undefined) {
-                toast.success("Usuários carregados com sucesso!", {
-                    toastId: "sucesso-carga",
+                toast.update("toast-status", {
+                    render: "Usuários carregados com sucesso!",
+                    type: toast.TYPE.SUCCESS,
                     autoClose: 2500,
+                    closeButton: true,
                     theme: "light"
                 });
                 sucessoExibido.current = true;
+            } else {
+                // Se virou ocioso sem passar por pendente visível, apenas removemos o toast pendente se houver
+                if (toast.isActive("toast-status")) {
+                    toast.dismiss("toast-status");
+                }
             }
         }
     }, [estado, mensagem, usuarios]);
