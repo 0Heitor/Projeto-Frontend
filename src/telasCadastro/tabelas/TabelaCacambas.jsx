@@ -86,17 +86,23 @@ export default function TabelaCacambas(props){
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            // Exibe o toast de processamento
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { toastId: "processando", autoClose: false, theme: "colored" }
-            );
+            
+            if (!toast.isActive("processando")) {
+                toast.info(
+                    <div className="d-flex align-items-center">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        <span>Sincronizando dados com o servidor...</span>
+                    </div>, 
+                    { 
+                        toastId: "processando", 
+                        autoClose: false, 
+                        theme: "colored", 
+                        closeButton: false 
+                    }
+                );
+            }
         } 
         else if (estado === ESTADO.ERRO) {
-            // Remove o de processamento antes de mostrar o erro
             toast.dismiss("processando");
             toast.error(`Ops! ${mensagem}`, { 
                 toastId: "erro", 
@@ -106,20 +112,21 @@ export default function TabelaCacambas(props){
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            // SEMPRE remove o de processamento ao ficar ocioso
-            toast.dismiss("processando");
+            if (!sucessoExibido.current && usuarios !== undefined) {
+                toast.dismiss("processando");
 
-            // Só mostra o sucesso se ele ainda não foi exibido para este ciclo
-            if (!sucessoExibido.current) {
-                toast.success("Caçambas carregadas com sucesso!", {
-                    toastId: "sucesso-carga", // Adicionado ID fixo para evitar duplicatas
-                    autoClose: 3000,
-                    theme: "light"
-                });
+                setTimeout(() => {
+                    toast.success("Caçambas carregadas com sucesso!", {
+                        toastId: "sucesso-carga",
+                        autoClose: 2500,
+                        theme: "light"
+                    });
+                }, 250);
+
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem]);
+    }, [estado, mensagem, cacambas]);
 
     let itensPaginacao = [];
     for (let numero = 1; numero <= totalDePaginas; numero++) {

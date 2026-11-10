@@ -101,26 +101,47 @@ export default function TabelaVendas(props) {
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { toastId: "processando", autoClose: false, theme: "colored" }
-            );
+            
+            if (!toast.isActive("processando")) {
+                toast.info(
+                    <div className="d-flex align-items-center">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        <span>Sincronizando dados com o servidor...</span>
+                    </div>, 
+                    { 
+                        toastId: "processando", 
+                        autoClose: false, 
+                        theme: "colored", 
+                        closeButton: false 
+                    }
+                );
+            }
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { toastId: "erro", theme: "dark" });
+            toast.error(`Ops! ${mensagem}`, { 
+                toastId: "erro", 
+                theme: "dark",
+                autoClose: 5000,
+                pauseOnHover: true
+            });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            toast.dismiss("processando");
-            if (!sucessoExibido.current) {
-                toast.success("Vendas carregadas com sucesso!", { toastId: "sucesso-carga", autoClose: 2000 });
+            if (!sucessoExibido.current && usuarios !== undefined) {
+                toast.dismiss("processando");
+
+                setTimeout(() => {
+                    toast.success("Vendas carregadas com sucesso!", {
+                        toastId: "sucesso-carga",
+                        autoClose: 2500,
+                        theme: "light"
+                    });
+                }, 250);
+
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem]);
+    }, [estado, mensagem, vendas]);
 
     let itensPaginacao = [];
     for (let numero = 1; numero <= totalDePaginas; numero++) {

@@ -102,7 +102,6 @@ export default function TabelaUsuarios(props){
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
             
-            // Dispara o toast de carregamento se já não estiver ativo
             if (!toast.isActive("processando")) {
                 toast.info(
                     <div className="d-flex align-items-center">
@@ -119,7 +118,6 @@ export default function TabelaUsuarios(props){
             }
         } 
         else if (estado === ESTADO.ERRO) {
-            // Remove o de carregamento e exibe o erro
             toast.dismiss("processando");
             toast.error(`Ops! ${mensagem}`, { 
                 toastId: "erro", 
@@ -129,12 +127,9 @@ export default function TabelaUsuarios(props){
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            // Só exibe se passou por um ciclo pendente anterior
             if (!sucessoExibido.current && usuarios !== undefined) {
-                // 1. Fecha o toast de carregamento atual
                 toast.dismiss("processando");
 
-                // 2. Pequeno atraso para o novo toast nascer logo abaixo perfeitamente
                 setTimeout(() => {
                     toast.success("Usuários carregados com sucesso!", {
                         toastId: "sucesso-carga",

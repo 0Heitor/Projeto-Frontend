@@ -83,17 +83,24 @@ export default function TabelaTiposCacambas(props) {
         }));
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
-    // Lógica de Toasts (Mantida a original)
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            toast.info(
-                <div className="d-flex align-items-center">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Sincronizando dados com o servidor...</span>
-                </div>, 
-                { toastId: "processando", autoClose: false, theme: "colored" }
-            );
+            
+            if (!toast.isActive("processando")) {
+                toast.info(
+                    <div className="d-flex align-items-center">
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        <span>Sincronizando dados com o servidor...</span>
+                    </div>, 
+                    { 
+                        toastId: "processando", 
+                        autoClose: false, 
+                        theme: "colored", 
+                        closeButton: false 
+                    }
+                );
+            }
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
@@ -105,17 +112,21 @@ export default function TabelaTiposCacambas(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            toast.dismiss("processando");
-            if (!sucessoExibido.current) {
-                toast.success("Tipos de Caçambas carregadas com sucesso!", {
-                    toastId: "sucesso-carga",
-                    autoClose: 3000,
-                    theme: "light"
-                });
+            if (!sucessoExibido.current && usuarios !== undefined) {
+                toast.dismiss("processando");
+
+                setTimeout(() => {
+                    toast.success("Tipos de Caçambas carregados com sucesso!", {
+                        toastId: "sucesso-carga",
+                        autoClose: 2500,
+                        theme: "light"
+                    });
+                }, 250);
+
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem]);
+    }, [estado, mensagem, tipocacambas]);
 
     let itensPaginacao = [];
     for (let numero = 1; numero <= totalDePaginas; numero++) {
