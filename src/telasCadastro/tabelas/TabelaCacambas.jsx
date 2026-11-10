@@ -112,7 +112,7 @@ export default function TabelaCacambas(props){
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && cacambas !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

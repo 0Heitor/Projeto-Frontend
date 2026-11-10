@@ -128,7 +128,7 @@ export default function TabelaLocacoes(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && locacoes !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

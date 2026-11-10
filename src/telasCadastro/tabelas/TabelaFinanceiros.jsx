@@ -138,7 +138,7 @@ export default function TabelaFinanceiros(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && financeiros !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

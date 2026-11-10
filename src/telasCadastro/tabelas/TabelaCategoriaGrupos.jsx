@@ -112,7 +112,7 @@ export default function TabelaCategoriaGrupo(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && categoriasgrupo !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

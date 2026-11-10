@@ -112,7 +112,7 @@ export default function TabelaProdutos(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && produtos !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

@@ -112,7 +112,7 @@ export default function TabelaFornecedores(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && fornecedores !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

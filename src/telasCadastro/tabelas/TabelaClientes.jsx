@@ -112,7 +112,7 @@ export default function TabelaClientes(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && clientes !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

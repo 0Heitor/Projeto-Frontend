@@ -123,7 +123,7 @@ export default function TabelaCompras(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && compras !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

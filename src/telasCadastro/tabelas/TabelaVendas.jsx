@@ -127,7 +127,7 @@ export default function TabelaVendas(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && vendas !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {

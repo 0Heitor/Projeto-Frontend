@@ -112,7 +112,7 @@ export default function TabelaTiposCacambas(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
+            if (!sucessoExibido.current && tipocacambas !== undefined) {
                 toast.dismiss("processando");
 
                 setTimeout(() => {
