@@ -11,7 +11,7 @@ import TelaCadastroCategoriaSubGrupo from "./telasCadastro/TelaCadastroCategoria
 import TelaCadastroCacamba from "./telasCadastro/TelaCadastroCacamba";
 import TelaCadastroTipoCacamba from "./telasCadastro/TelaCadastroTipoCacamba";
 import TelaCadastroUsuario from './telasCadastro/TelaCadastroUsuario.jsx';
-import TelaRelatorioVenda from './telasCadastro/TelaRelatorioVenda.jsx';
+import TelaRelatorioVenda from './telasCadastro/TelaRelatorioVenda.jsx'; 
 import TelaMenu from './telasCadastro/TelaMenu.jsx';
 import TelaLogin from './telasCadastro/TelaLogin.jsx';
 import Tela404 from './telasCadastro/Tela404.jsx';
