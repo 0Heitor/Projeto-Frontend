@@ -11,6 +11,7 @@ import TelaCadastroCategoriaSubGrupo from "./telasCadastro/TelaCadastroCategoria
 import TelaCadastroCacamba from "./telasCadastro/TelaCadastroCacamba";
 import TelaCadastroTipoCacamba from "./telasCadastro/TelaCadastroTipoCacamba";
 import TelaCadastroUsuario from './telasCadastro/TelaCadastroUsuario.jsx';
+import TelaRelatorioVenda from './telasCadastro/TelaRelatorioVenda.jsx';
 import TelaMenu from './telasCadastro/TelaMenu.jsx';
 import TelaLogin from './telasCadastro/TelaLogin.jsx';
 import Tela404 from './telasCadastro/Tela404.jsx';
@@ -60,6 +61,7 @@ function App() {
               <Route path="/Sistema/categorias/grupo" element={<PrivateRoute> <TelaCadastroCategoriaGrupo/> </PrivateRoute>} />
               <Route path="/Sistema/categorias/sub-grupo" element={<PrivateRoute> <TelaCadastroCategoriaSubGrupo/> </PrivateRoute>} />
               <Route path="/Sistema/vizualizacao-agendamento" element={<PrivateRoute> <TelaVizualizacaoAgendamento/> </PrivateRoute>} />
+              <Route path="/Sistema/relatorio-vendas" element={<PrivateRoute> <TelaRelatorioVenda/> </PrivateRoute>} />
               <Route path="/Sistema" element={<PrivateRoute> <TelaMenu/> </PrivateRoute>} />
               <Route path="/Sistema/*" element={<PrivateRoute> <Tela404/> </PrivateRoute>} />
             </Routes>

@@ -61,8 +61,8 @@ export default function Menu() {
                                 title={<span className="fs-5 fw-semibold text-dark"><i className="bi bi-file-earmark-bar-graph me-2"></i> Relatórios</span>} 
                                 id="relatorios-dropdown"
                             >
-                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-saldos" className="fs-6 py-2">Relatório de Saldos</NavDropdown.Item>
-                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-de-vendas" className="fs-6 py-2">Relatório de Vendas</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-saldos" className="fs-6 py-2">Relatório de Saldos</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/Sistema/relatorio-vendas" className="fs-6 py-2">Relatório de Vendas</NavDropdown.Item>
                             </NavDropdown>
                         ))}
                     </Nav>
