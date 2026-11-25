@@ -1,10 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { Container, Card, Badge, Spinner, Alert, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { buscarLocacoes, atualizarLocacao } from "../../redux/redutores/locacaoReducer.js";
 import ESTADO from "../../recursos/estado";
 import { toast } from "react-toastify";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
 
 const CENTRO_PADRAO = [-21.482, -51.532];
 
