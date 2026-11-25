@@ -6,12 +6,16 @@ import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../contexto/AuthContext";
 
+const MAX_BOTOES_PAGINA = 10;
+
 export default function TabelaTiposCacambas(props) {
     const { estado, mensagem, tipocacambas, totalRegistros } = useSelector(state => state.tipocacamba);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [tipoParaExcluir, setTipoParaExcluir] = useState(null);
 
-    const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
+    const totalValido = totalRegistros > 0 ? totalRegistros : (tipocacambas?.length || 1);
+    const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
+
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
@@ -83,24 +87,17 @@ export default function TabelaTiposCacambas(props) {
         }));
     }, [dispatch, props.paginaAtual, props.itensPorPagina]);
 
+    // Lógica de Toasts (Mantida a original)
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            
-            if (!toast.isActive("processando")) {
-                toast.info(
-                    <div className="d-flex align-items-center">
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        <span>Sincronizando dados com o servidor...</span>
-                    </div>, 
-                    { 
-                        toastId: "processando", 
-                        autoClose: false, 
-                        theme: "colored", 
-                        closeButton: false 
-                    }
-                );
-            }
+            toast.info(
+                <div className="d-flex align-items-center">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
+                { toastId: "processando", autoClose: false, theme: "colored" }
+            );
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
@@ -112,30 +109,46 @@ export default function TabelaTiposCacambas(props) {
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && tipocacambas !== undefined) {
-                toast.dismiss("processando");
-
-                setTimeout(() => {
-                    toast.success("Tipos de Caçambas carregados com sucesso!", {
-                        toastId: "sucesso-carga",
-                        autoClose: 2500,
-                        theme: "light"
-                    });
-                }, 250);
-
+            toast.dismiss("processando");
+            if (!sucessoExibido.current) {
+                toast.success("Tipos de Caçambas carregadas com sucesso!", {
+                    toastId: "sucesso-carga",
+                    autoClose: 3000,
+                    theme: "light"
+                });
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem, tipocacambas]);
+    }, [estado, mensagem]);
+
+    const calcularJanelaPaginas = () => {
+        if (totalDePaginas <= MAX_BOTOES_PAGINA) {
+            return { inicio: 1, fim: totalDePaginas };
+        }
+
+        const metade = Math.floor(MAX_BOTOES_PAGINA / 2);
+        let inicio = props.paginaAtual - metade;
+        let fim = inicio + MAX_BOTOES_PAGINA - 1;
+
+        if (inicio < 1) {
+            inicio = 1;
+            fim = MAX_BOTOES_PAGINA;
+        }
+
+        if (fim > totalDePaginas) {
+            fim = totalDePaginas;
+            inicio = Math.max(1, totalDePaginas - MAX_BOTOES_PAGINA + 1);
+        }
+
+        return { inicio, fim };
+    };
+
+    const { inicio: paginaInicio, fim: paginaFim } = calcularJanelaPaginas();
 
     let itensPaginacao = [];
-    for (let numero = 1; numero <= totalDePaginas; numero++) {
+    for (let numero = paginaInicio; numero <= paginaFim; numero++) {
         itensPaginacao.push(
-            <Pagination.Item
-                key={numero}
-                active={numero === props.paginaAtual}
-                onClick={() => mudarPagina(numero)}
-            >
+            <Pagination.Item key={numero} active={numero === props.paginaAtual} onClick={() => mudarPagina(numero)}>
                 {numero}
             </Pagination.Item>
         );
@@ -267,7 +280,9 @@ export default function TabelaTiposCacambas(props) {
                     <Pagination className="mb-0 shadow-sm">
                         <Pagination.First onClick={() => mudarPagina(1)} disabled={props.paginaAtual === 1} />
                         <Pagination.Prev onClick={() => mudarPagina(props.paginaAtual - 1)} disabled={props.paginaAtual === 1} />
+                        {paginaInicio > 1 && <Pagination.Ellipsis disabled />}
                         {itensPaginacao}
+                        {paginaFim < totalDePaginas && <Pagination.Ellipsis disabled />}
                         <Pagination.Next onClick={() => mudarPagina(props.paginaAtual + 1)} disabled={props.paginaAtual === totalDePaginas} />
                         <Pagination.Last onClick={() => mudarPagina(totalDePaginas)} disabled={props.paginaAtual === totalDePaginas} />
                     </Pagination>

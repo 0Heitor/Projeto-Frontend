@@ -6,15 +6,17 @@ import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../contexto/AuthContext";
 
+const MAX_BOTOES_PAGINA = 10;
+
 export default function TabelaUsuarios(props){
 
     const { estado, mensagem, usuarios, totalRegistros } = useSelector(state => state.usuario);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
     const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
-    //const [itensPorPagina, setItensPorPagina] = useState(props.itensPorPagina);
-    //const [paginaAtual, setPaginaAtual] = useState(props.paginaAtual);
 
-    const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
+    const totalValido = totalRegistros > 0 ? totalRegistros : (usuarios?.length || 1);
+    const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
+
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
@@ -101,23 +103,17 @@ export default function TabelaUsuarios(props){
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            
-            if (!toast.isActive("processando")) {
-                toast.info(
-                    <div className="d-flex align-items-center">
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        <span>Sincronizando dados com o servidor...</span>
-                    </div>, 
-                    { 
-                        toastId: "processando", 
-                        autoClose: false, 
-                        theme: "colored", 
-                        closeButton: false 
-                    }
-                );
-            }
+            // Exibe o toast de processamento
+            toast.info(
+                <div className="d-flex align-items-center">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
+                { toastId: "processando", autoClose: false, theme: "colored" }
+            );
         } 
         else if (estado === ESTADO.ERRO) {
+            // Remove o de processamento antes de mostrar o erro
             toast.dismiss("processando");
             toast.error(`Ops! ${mensagem}`, { 
                 toastId: "erro", 
@@ -127,32 +123,51 @@ export default function TabelaUsuarios(props){
             });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && usuarios !== undefined) {
-                toast.dismiss("processando");
+            // SEMPRE remove o de processamento ao ficar ocioso
+            toast.dismiss("processando");
 
-                setTimeout(() => {
-                    toast.success("Usuários carregados com sucesso!", {
-                        toastId: "sucesso-carga",
-                        autoClose: 2500,
-                        theme: "light"
-                    });
-                }, 250);
-
+            // Só mostra o sucesso se ele ainda não foi exibido para este ciclo
+            if (!sucessoExibido.current) {
+                toast.success("Usuários carregados com sucesso!", {
+                    toastId: "sucesso-carga", // Adicionado ID fixo para evitar duplicatas
+                    autoClose: 3000,
+                    theme: "light"
+                });
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem, usuarios]);
+    }, [estado, mensagem]);
+
+    const calcularJanelaPaginas = () => {
+        if (totalDePaginas <= MAX_BOTOES_PAGINA) {
+            return { inicio: 1, fim: totalDePaginas };
+        }
+
+        const metade = Math.floor(MAX_BOTOES_PAGINA / 2);
+        let inicio = props.paginaAtual - metade;
+        let fim = inicio + MAX_BOTOES_PAGINA - 1;
+
+        if (inicio < 1) {
+            inicio = 1;
+            fim = MAX_BOTOES_PAGINA;
+        }
+
+        if (fim > totalDePaginas) {
+            fim = totalDePaginas;
+            inicio = Math.max(1, totalDePaginas - MAX_BOTOES_PAGINA + 1);
+        }
+
+        return { inicio, fim };
+    };
+
+    const { inicio: paginaInicio, fim: paginaFim } = calcularJanelaPaginas();
 
     let itensPaginacao = [];
-    for(let numero = 1; numero <= totalDePaginas; numero++){
+    for (let numero = paginaInicio; numero <= paginaFim; numero++) {
         itensPaginacao.push(
-            <Pagination.Item 
-                key={numero} 
-                active={numero === props.paginaAtual/*paginaAtual*/}
-                value={props.filtros.filtroLimit} 
-                onChange={manipulaMudanca}
-                onClick={() => mudarPagina(numero)}
-            >{numero}</Pagination.Item>
+            <Pagination.Item key={numero} active={numero === props.paginaAtual} onClick={() => mudarPagina(numero)}>
+                {numero}
+            </Pagination.Item>
         );
     }
 
@@ -164,7 +179,7 @@ export default function TabelaUsuarios(props){
                     <h2 className="text-primary mb-0">Gestão de Usuários</h2>
                     <small className="text-muted">Visualize e gerencie os acessos ao sistema</small>
                 </div>
-                {(isAdmin) && (
+                {(isAdmin && !props.modoSelecao) && (
                     <Button 
                         variant="success" 
                         className="d-flex align-items-center gap-2 shadow-sm"
@@ -246,7 +261,7 @@ export default function TabelaUsuarios(props){
                             <th>Nível</th>
                             <th>Status</th>
                             <th>Datas (Acesso/Criação)</th>
-                            {isAdmin &&<th className="text-center">Ações</th>}
+                            {(isAdmin || props.modoSelecao) &&<th className="text-center">Ações</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -273,17 +288,26 @@ export default function TabelaUsuarios(props){
                                     <div><i className="bi bi-box-arrow-in-right me-2"></i> { usuario.ultimo_login ? new Date(usuario.ultimo_login).toLocaleString('pt-BR') : 'Nunca' }</div>
                                     <div className="text-muted"><i className="bi bi-calendar-plus me-2"></i> {new Date(usuario.criado).toLocaleString('pt-BR')}</div>
                                 </td>
-                                {isAdmin && (
+                                {(isAdmin || props.modoSelecao) && (
                                     <td className="text-center">
-                                        <div className="d-flex justify-content-center gap-3"> {/* Aumentei o gap entre botões */}
-                                            {/* Removi o size="sm" para os botões ficarem maiores */}
-                                            <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarUsuario(usuario)} title="Editar">
-                                                <i className="bi bi-pencil-fill fs-5"></i>
+                                        {props.modoSelecao ? (
+                                            <Button 
+                                                variant="success" 
+                                                className="shadow-sm" 
+                                                onClick={() => props.onSelecionar(usuario)}
+                                            >
+                                                <i className="bi bi-check2-square me-1"></i> Selecionar
                                             </Button>
-                                            <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirUsuario(usuario)} title="Excluir">
-                                                <i className="bi bi-trash-fill fs-5"></i>
-                                            </Button>
-                                        </div>
+                                        ) : (
+                                            <div className="d-flex justify-content-center gap-3">
+                                                <Button variant="outline-warning" className="p-2 d-flex align-items-center" onClick={() => editarUsuario(usuario)}>
+                                                    <i className="bi bi-pencil-fill fs-5"></i>
+                                                </Button>
+                                                <Button variant="outline-danger" className="p-2 d-flex align-items-center" onClick={() => excluirUsuario(usuario)}>
+                                                    <i className="bi bi-trash-fill fs-5"></i>
+                                                </Button>
+                                            </div>
+                                        )}
                                     </td>
                                 )}
                             </tr>
@@ -303,14 +327,9 @@ export default function TabelaUsuarios(props){
                     <Pagination className="mb-0 shadow-sm">
                         <Pagination.First onClick={() => mudarPagina(1)} disabled={props.paginaAtual === 1} />
                         <Pagination.Prev onClick={() => mudarPagina(props.paginaAtual - 1)} disabled={props.paginaAtual === 1} />
-                        
-                        {/* Renderização dinâmica dos itens aqui */}
-                        {/* <Pagination.Item active={paginaAtual === 1} onClick={() => mudarPagina(1)}>{1}</Pagination.Item>
-                        {totalDePaginas > 1 && <Pagination.Item active={paginaAtual === 2} onClick={() => mudarPagina(2)}>{2}</Pagination.Item>}
-                        {totalDePaginas > 2 && <Pagination.Item active={paginaAtual === 3} onClick={() => mudarPagina(3)}>{3}</Pagination.Item>} */}
-
+                        {paginaInicio > 1 && <Pagination.Ellipsis disabled />}
                         {itensPaginacao}
-
+                        {paginaFim < totalDePaginas && <Pagination.Ellipsis disabled />}
                         <Pagination.Next onClick={() => mudarPagina(props.paginaAtual + 1)} disabled={props.paginaAtual === totalDePaginas} />
                         <Pagination.Last onClick={() => mudarPagina(totalDePaginas)} disabled={props.paginaAtual === totalDePaginas} />
                     </Pagination>

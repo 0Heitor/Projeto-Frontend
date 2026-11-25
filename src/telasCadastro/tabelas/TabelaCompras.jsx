@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../contexto/AuthContext";
 
+const MAX_BOTOES_PAGINA = 10;
+
 export default function TabelaCompras(props) {
     const { estado, mensagem, compras, totalRegistros } = useSelector(state => state.compra);
     const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
@@ -14,7 +16,9 @@ export default function TabelaCompras(props) {
     const [mostrarItens, setMostrarItens] = useState(false);
     const [itensVisualizar, setItensVisualizar] = useState([]);
 
-    const totalDePaginas = Math.ceil(totalRegistros / props.itensPorPagina);
+    const totalValido = totalRegistros > 0 ? totalRegistros : (compras?.length || 1);
+    const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
+
     const sucessoExibido = useRef(false);
     const dispatch = useDispatch();
 
@@ -97,50 +101,53 @@ export default function TabelaCompras(props) {
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            
-            if (!toast.isActive("processando")) {
-                toast.info(
-                    <div className="d-flex align-items-center">
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        <span>Sincronizando dados com o servidor...</span>
-                    </div>, 
-                    { 
-                        toastId: "processando", 
-                        autoClose: false, 
-                        theme: "colored", 
-                        closeButton: false 
-                    }
-                );
-            }
+            toast.info(
+                <div className="d-flex align-items-center">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
+                { toastId: "processando", autoClose: false, theme: "colored" }
+            );
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { 
-                toastId: "erro", 
-                theme: "dark",
-                autoClose: 5000,
-                pauseOnHover: true
-            });
+            toast.error(`Ops! ${mensagem}`, { toastId: "erro", theme: "dark" });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && compras !== undefined) {
-                toast.dismiss("processando");
-
-                setTimeout(() => {
-                    toast.success("Compras carregadas com sucesso!", {
-                        toastId: "sucesso-carga",
-                        autoClose: 2500,
-                        theme: "light"
-                    });
-                }, 250);
-
+            toast.dismiss("processando");
+            if (!sucessoExibido.current) {
+                toast.success("Compras carregadas com sucesso!", { toastId: "sucesso-carga", autoClose: 2000 });
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem, compras]);
+    }, [estado, mensagem]);
+
+    const calcularJanelaPaginas = () => {
+        if (totalDePaginas <= MAX_BOTOES_PAGINA) {
+            return { inicio: 1, fim: totalDePaginas };
+        }
+
+        const metade = Math.floor(MAX_BOTOES_PAGINA / 2);
+        let inicio = props.paginaAtual - metade;
+        let fim = inicio + MAX_BOTOES_PAGINA - 1;
+
+        if (inicio < 1) {
+            inicio = 1;
+            fim = MAX_BOTOES_PAGINA;
+        }
+
+        if (fim > totalDePaginas) {
+            fim = totalDePaginas;
+            inicio = Math.max(1, totalDePaginas - MAX_BOTOES_PAGINA + 1);
+        }
+
+        return { inicio, fim };
+    };
+
+    const { inicio: paginaInicio, fim: paginaFim } = calcularJanelaPaginas();
 
     let itensPaginacao = [];
-    for (let numero = 1; numero <= totalDePaginas; numero++) {
+    for (let numero = paginaInicio; numero <= paginaFim; numero++) {
         itensPaginacao.push(
             <Pagination.Item key={numero} active={numero === props.paginaAtual} onClick={() => mudarPagina(numero)}>
                 {numero}
@@ -315,7 +322,9 @@ export default function TabelaCompras(props) {
                     <Pagination className="mb-0 shadow-sm">
                         <Pagination.First onClick={() => mudarPagina(1)} disabled={props.paginaAtual === 1} />
                         <Pagination.Prev onClick={() => mudarPagina(props.paginaAtual - 1)} disabled={props.paginaAtual === 1} />
+                        {paginaInicio > 1 && <Pagination.Ellipsis disabled />}
                         {itensPaginacao}
+                        {paginaFim < totalDePaginas && <Pagination.Ellipsis disabled />}
                         <Pagination.Next onClick={() => mudarPagina(props.paginaAtual + 1)} disabled={props.paginaAtual === totalDePaginas} />
                         <Pagination.Last onClick={() => mudarPagina(totalDePaginas)} disabled={props.paginaAtual === totalDePaginas} />
                     </Pagination>

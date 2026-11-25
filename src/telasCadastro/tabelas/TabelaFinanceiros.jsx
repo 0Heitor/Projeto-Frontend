@@ -6,9 +6,12 @@ import { toast } from "react-toastify";
 import { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../contexto/AuthContext";
 
+const MAX_BOTOES_PAGINA = 10;
+
 export default function TabelaFinanceiros(props) {
     const { estado, mensagem, financeiros, totalRegistros } = useSelector(state => state.financeiro);
 
+    // CORREÇÃO: Garante que o total de páginas seja no mínimo 1 para a paginação nunca sumir
     const totalValido = totalRegistros > 0 ? totalRegistros : (financeiros?.length || 1);
     const totalDePaginas = Math.max(1, Math.ceil(totalValido / props.itensPorPagina));
 
@@ -22,8 +25,43 @@ export default function TabelaFinanceiros(props) {
     const [exibirModalEdicao, setExibirModalEdicao] = useState(false);
     const [itemEditando, setItemEditando] = useState(null);
 
+    // const manipulaMudanca = (evento) => {
+    //     props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
+    // };
+
     const manipulaMudanca = (evento) => {
-        props.setFiltros({ ...props.filtros, [evento.target.name]: evento.target.value });
+        const { name, value } = evento.target;
+
+        if (name === "data_vencimento_inicial") {
+            const dataFinalAtual = props.filtros.data_vencimento || "";
+            const novaDataFinal =
+                value && (!dataFinalAtual || dataFinalAtual < value)
+                    ? value
+                    : dataFinalAtual;
+
+            props.setFiltros({
+                ...props.filtros,
+                data_vencimento_inicial: value,
+                data_vencimento: novaDataFinal
+            });
+            return;
+        }
+
+        if (name === "data_vencimento") {
+            const dataInicialAtual = props.filtros.data_vencimento_inicial || "";
+            const dataFinalAjustada =
+                value && dataInicialAtual && value < dataInicialAtual
+                    ? dataInicialAtual
+                    : value;
+
+            props.setFiltros({
+                ...props.filtros,
+                data_vencimento: dataFinalAjustada
+            });
+            return;
+        }
+
+        props.setFiltros({ ...props.filtros, [name]: value });
     };
 
     // ABRIR E FECHAR MODAL DE EDIÇÃO
@@ -51,6 +89,8 @@ export default function TabelaFinanceiros(props) {
 
     const salvarEdicao = () => {
         if (!itemEditando) return;
+
+        // Monta o objeto formatado para atualizar via Redux
         const dadosAtualizados = {
             ...itemEditando,
             data_pagamento: new Date().toISOString().split('T')[0] || null,
@@ -58,6 +98,7 @@ export default function TabelaFinanceiros(props) {
         };
 
         dispatch(atualizarFinanceiro(dadosAtualizados)).then(() => {
+            // CORREÇÃO: Recarrega a listagem mantendo exatamente a página atual após salvar
             dispatch(buscarFinanceiros({
                 ...props.filtros,
                 limit: props.itensPorPagina,
@@ -79,7 +120,8 @@ export default function TabelaFinanceiros(props) {
     }
 
     function mudarPagina(numero) {
-        props.setPaginaAtual(numero);
+        const paginaSegura = Math.min(Math.max(1, numero), totalDePaginas);
+        props.setPaginaAtual(paginaSegura);
         const novoOffset = props.itensPorPagina * (numero - 1);
         const novosFiltros = {
             ...props.filtros,
@@ -112,47 +154,26 @@ export default function TabelaFinanceiros(props) {
     useEffect(() => {
         if (estado === ESTADO.PENDENTE) {
             sucessoExibido.current = false;
-            
-            if (!toast.isActive("processando")) {
-                toast.info(
-                    <div className="d-flex align-items-center">
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        <span>Sincronizando dados com o servidor...</span>
-                    </div>, 
-                    { 
-                        toastId: "processando", 
-                        autoClose: false, 
-                        theme: "colored", 
-                        closeButton: false 
-                    }
-                );
-            }
+            toast.info(
+                <div className="d-flex align-items-center">
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    <span>Sincronizando dados com o servidor...</span>
+                </div>, 
+                { toastId: "processando", autoClose: false, theme: "colored" }
+            );
         } 
         else if (estado === ESTADO.ERRO) {
             toast.dismiss("processando");
-            toast.error(`Ops! ${mensagem}`, { 
-                toastId: "erro", 
-                theme: "dark",
-                autoClose: 5000,
-                pauseOnHover: true
-            });
+            toast.error(`Ops! ${mensagem}`, { toastId: "erro", theme: "dark" });
         } 
         else if (estado === ESTADO.OCIOSO) {
-            if (!sucessoExibido.current && financeiros !== undefined) {
-                toast.dismiss("processando");
-
-                setTimeout(() => {
-                    toast.success("Contas a Receber carregados com sucesso!", {
-                        toastId: "sucesso-carga",
-                        autoClose: 2500,
-                        theme: "light"
-                    });
-                }, 250);
-
+            toast.dismiss("processando");
+            if (!sucessoExibido.current) {
+                toast.success("Títulos a receber carregados com sucesso!", { toastId: "sucesso-carga", autoClose: 2000 });
                 sucessoExibido.current = true;
             }
         }
-    }, [estado, mensagem, financeiros]);
+    }, [estado, mensagem]);
 
     // Formatação de moeda e datas
     const formatarMoeda = (valor) => {
@@ -177,8 +198,32 @@ export default function TabelaFinanceiros(props) {
         }
     };
 
+    const calcularJanelaPaginas = () => {
+        if (totalDePaginas <= MAX_BOTOES_PAGINA) {
+            return { inicio: 1, fim: totalDePaginas };
+        }
+
+        const metade = Math.floor(MAX_BOTOES_PAGINA / 2);
+        let inicio = props.paginaAtual - metade;
+        let fim = inicio + MAX_BOTOES_PAGINA - 1;
+
+        if (inicio < 1) {
+            inicio = 1;
+            fim = MAX_BOTOES_PAGINA;
+        }
+
+        if (fim > totalDePaginas) {
+            fim = totalDePaginas;
+            inicio = Math.max(1, totalDePaginas - MAX_BOTOES_PAGINA + 1);
+        }
+
+        return { inicio, fim };
+    };
+
+    const { inicio: paginaInicio, fim: paginaFim } = calcularJanelaPaginas();
+
     let itensPaginacao = [];
-    for (let numero = 1; numero <= totalDePaginas; numero++) {
+    for (let numero = paginaInicio; numero <= paginaFim; numero++) {
         itensPaginacao.push(
             <Pagination.Item key={numero} active={numero === props.paginaAtual} onClick={() => mudarPagina(numero)}>
                 {numero}
@@ -207,7 +252,7 @@ export default function TabelaFinanceiros(props) {
                                 <Form.Control name="nome" value={props.filtros.nome || ""} onChange={manipulaMudanca} placeholder="Cliente" />
                             </FloatingLabel>
                         </Col>
-                        <Col md={2}>
+                        <Col md={3}>
                             <FloatingLabel label="Origem Tipo">
                                 <Form.Select name="origem_tipo" value={props.filtros.origem_tipo || ""} onChange={manipulaMudanca}>
                                     <option value="">Todos</option>
@@ -217,14 +262,30 @@ export default function TabelaFinanceiros(props) {
                             </FloatingLabel>
                         </Col>
                         <Col md={2}>
-                            <FloatingLabel label="Data Vencimento">
+                            <FloatingLabel label="Data Vencimento Inicial">
                                 <Form.Control 
                                     type="date" 
-                                    name="data_vencimento" 
+                                    name="data_vencimento_inicial" 
+                                    value={props.filtros.data_vencimento_inicial || ""} 
+                                    onChange={manipulaMudanca} 
+                                />
+                            </FloatingLabel>
+                        </Col>
+                        <Col md={2}>
+                            <FloatingLabel label="Data Vencimento Final">
+                                <Form.Control 
+                                    type="date" 
+                                    name="data_vencimento"
+                                    min={props.filtros.data_vencimento_inicial || undefined}
                                     value={props.filtros.data_vencimento || ""} 
                                     onChange={manipulaMudanca} 
                                 />
                             </FloatingLabel>
+                        </Col>
+                        <Col md={2} className="d-flex align-items-center">
+                            <Button variant="primary" className="w-100 py-3" onClick={buscarComFiltro}>
+                                <i className="bi bi-search"></i> Buscar
+                            </Button>
                         </Col>
                         <Col md={2}>
                             <FloatingLabel label="Status">
@@ -244,11 +305,6 @@ export default function TabelaFinanceiros(props) {
                                     <option value="false">Não</option>
                                 </Form.Select>
                             </FloatingLabel>
-                        </Col>
-                        <Col md={1} className="d-flex align-items-center">
-                            <Button variant="primary" className="w-100 py-3" onClick={buscarComFiltro}>
-                                <i className="bi bi-search"></i> Buscar
-                            </Button>
                         </Col>
                     </Row>
                 </Card.Body>
@@ -330,9 +386,11 @@ export default function TabelaFinanceiros(props) {
                     <Pagination className="mb-0 shadow-sm">
                         <Pagination.First onClick={() => mudarPagina(1)} disabled={props.paginaAtual === 1} />
                         <Pagination.Prev onClick={() => mudarPagina(props.paginaAtual - 1)} disabled={props.paginaAtual === 1} />
+                        {paginaInicio > 1 && <Pagination.Ellipsis disabled />}
                         {itensPaginacao}
-                        <Pagination.Next onClick={() => mudarPagina(props.paginaAtual + 1)} disabled={props.paginaAtual === totalDePaginas || totalDePaginas === 0} />
-                        <Pagination.Last onClick={() => mudarPagina(totalDePaginas)} disabled={props.paginaAtual === totalDePaginas || totalDePaginas === 0} />
+                        {paginaFim < totalDePaginas && <Pagination.Ellipsis disabled />}
+                        <Pagination.Next onClick={() => mudarPagina(props.paginaAtual + 1)} disabled={props.paginaAtual === totalDePaginas} />
+                        <Pagination.Last onClick={() => mudarPagina(totalDePaginas)} disabled={props.paginaAtual === totalDePaginas} />
                     </Pagination>
 
                     <div className="d-flex align-items-center gap-2 border-start ps-3">
